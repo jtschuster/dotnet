@@ -174,8 +174,12 @@ internal class DefaultVisualStudioRazorParser : VisualStudioRazorParser, IDispos
         }
         catch (Exception ex)
         {
-            Debug.Fail("DefaultVisualStudioRazorParser.QueueReparse threw exception:" +
-                Environment.NewLine + ex.Message + Environment.NewLine + "Stack trace:" + Environment.NewLine + ex.StackTrace);
+            Debug.Fail($"""
+                DefaultVisualStudioRazorParser.QueueReparse threw exception:
+                {ex.Message}
+                Stack trace:
+                {ex.StackTrace}
+                """);
         }
     }
 
@@ -466,8 +470,12 @@ internal class DefaultVisualStudioRazorParser : VisualStudioRazorParser, IDispos
         }
         catch (Exception ex)
         {
-            Debug.Fail("DefaultVisualStudioRazorParser.OnResultsReady threw exception:" +
-                Environment.NewLine + ex.Message + Environment.NewLine + "Stack trace:" + Environment.NewLine + ex.StackTrace);
+            Debug.Fail($"""
+                DefaultVisualStudioRazorParser.OnResultsReady threw exception:
+                {ex.Message}
+                Stack trace:
+                {ex.StackTrace}
+                """);
         }
     }
 
@@ -624,7 +632,8 @@ internal class DefaultVisualStudioRazorParser : VisualStudioRazorParser, IDispos
         }
     }
 
-    private class VisualStudioEnableTagHelpersFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
+    // Internal for testing
+    internal class VisualStudioEnableTagHelpersFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
     {
         public int Order => 0;
 

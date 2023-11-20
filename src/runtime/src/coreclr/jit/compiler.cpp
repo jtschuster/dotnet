@@ -1945,6 +1945,7 @@ void Compiler::compInit(ArenaAllocator*       pAlloc,
 #endif
     m_switchDescMap  = nullptr;
     m_blockToEHPreds = nullptr;
+    m_dominancePreds = nullptr;
     m_fieldSeqStore  = nullptr;
     m_refAnyClass    = nullptr;
     for (MemoryKind memoryKind : allMemoryKinds())
@@ -2927,7 +2928,7 @@ void Compiler::compInitOptions(JitFlags* jitFlags)
         }
 
 #ifdef LATE_DISASM
-        if (JitConfig.JitLateDisasm().contains(info.compMethodName, info.compClassName, &info.compMethodInfo->args))
+        if (JitConfig.JitLateDisasm().contains(info.compMethodHnd, info.compClassHnd, &info.compMethodInfo->args))
             opts.doLateDisasm = true;
 #endif // LATE_DISASM
 
@@ -5739,6 +5740,7 @@ void Compiler::ResetOptAnnotations()
     fgResetForSsa();
     vnStore              = nullptr;
     m_blockToEHPreds     = nullptr;
+    m_dominancePreds     = nullptr;
     fgSsaPassesCompleted = 0;
     fgVNPassesCompleted  = 0;
     fgSsaChecksEnabled   = false;

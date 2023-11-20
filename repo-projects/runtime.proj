@@ -16,20 +16,22 @@
     <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
 
     <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
-    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</BaseOS>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(Platform)</BaseOS>
 
     <_platformIndex>$(OverrideTargetRid.LastIndexOf('-'))</_platformIndex>
     <TargetArch>$(OverrideTargetRid.Substring($(_platformIndex)).TrimStart('-'))</TargetArch>
 
-    <BuildNonPortable>false</BuildNonPortable>
+    <PortableBuild Condition="'$(PortableBuild)' == ''">false</PortableBuild>
+    <BuildNonPortable>true</BuildNonPortable>
     <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
 
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <!-- <BuildCommandArgs>$(BuildCommandArgs) -s clr -/-arch arm64 -/-cross</BuildCommandArgs> -->
-    <BuildCommandArgs Condition=" '$(TargetRid)' != '$(OverrideTargetRid)' ">$(BuildCommandArgs) --arch $(TargetArch) --cross</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildCommandArgs) --arch $(OverrideTargetArch)--cross</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(OverrideTargetOS)' != ''">$(BuildCommandArgs) --os $(OverrideTargetOS)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(OverrideTargetRid)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:RuntimeOS=$(RuntimeOS)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:BaseOS=$(BaseOS)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(PortableBuild)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:SourceBuildNonPortable=$(BuildNonPortable)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
@@ -57,25 +59,11 @@
       <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddRidToRuntimeJson" />
-
   <Target Name="SetOutputList" AfterTargets="Package" BeforeTargets="GatherBuiltPackages">
     <ItemGroup>
       <PackagesOutputList Include="$(ShippingPackagesOutput)" />
       <PackagesOutputList Include="$(NonShippingPackagesOutput)" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="UpdateRuntimeGraph"
-          BeforeTargets="Build"
-          Condition="'$(_IsBootstrapping)' == 'true'">
-    <PropertyGroup>
-      <RuntimeJsonFile>$(ProjectDirectory)pkg/Microsoft.NETCore.Platforms/runtime.json</RuntimeJsonFile>
-    </PropertyGroup>
-
-    <Message Importance="High" Text="Adding rid, $(TargetRid), to $(RuntimeJsonFile)" />
-    <AddRidToRuntimeJson RuntimeJson="$(RuntimeJsonFile)"
-                         Rid="$(TargetRid)-$(Platform)" />
   </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
