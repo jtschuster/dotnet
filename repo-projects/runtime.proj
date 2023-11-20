@@ -26,7 +26,7 @@
     <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
 
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommandArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildCommandArgs) --arch $(OverrideTargetArch)--cross</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildCommandArgs) --arch $(OverrideTargetArch) --cross</BuildCommandArgs>
     <BuildCommandArgs Condition="'$(OverrideTargetOS)' != ''">$(BuildCommandArgs) --os $(OverrideTargetOS)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(OverrideTargetRid)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:RuntimeOS=$(RuntimeOS)</BuildCommandArgs>
