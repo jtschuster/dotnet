@@ -38,7 +38,6 @@
       <InnerBuildArgs>$(InnerBuildArgs) --nodereuse false</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) --warnAsError false</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) --outputrid $(TargetRid)</InnerBuildArgs>
-      <InnerBuildArgs>$(InnerBuildArgs) -bl</InnerBuildArgs>
       <InnerBuildArgs Condition=" '$(TargetRid)' != '$(HostRid)' ">$(InnerBuildArgs) --cross</InnerBuildArgs>
       <!-- PackageOS and ToolsOS control the rids of prebuilts consumed by the build.
            They are set to RuntimeOS so they match with the build SDK rid. -->
