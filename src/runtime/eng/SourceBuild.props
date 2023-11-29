@@ -22,6 +22,9 @@
     <_targetRidPlatformIndex>$(TargetRid.LastIndexOf('-'))</_targetRidPlatformIndex>
     <TargetArch>$(TargetRid.Substring($(_targetRidPlatformIndex)).TrimStart('-'))</TargetArch>
 
+    <_hostRidPlatformIndex>$(HostRid.LastIndexOf('-'))</_hostRidPlatformIndex>
+    <HostArch>$(HostRid.Substring($(_hostRidPlatformIndex)).TrimStart('-'))</HostArch>
+
     <LogVerbosity Condition="'$(LogVerbosity)' == ''">minimal</LogVerbosity>
   </PropertyGroup>
 
@@ -51,6 +54,7 @@
       <InnerBuildArgs Condition="'$(ContinuousIntegrationBuild)' != ''">$(InnerBuildArgs) /p:ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)</InnerBuildArgs>
       <InnerBuildArgs Condition="'$(SourceBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) --usemonoruntime</InnerBuildArgs>
       <InnerBuildArgs Condition="'$(PortableBuild)' != ''">$(InnerBuildArgs) /p:PortableBuild=$(PortableBuild)</InnerBuildArgs>
+      <InnerBuildArgs Condition="'$(DotnetBuildVertical) != ''">$(InnerBuildArgs) /p:DotnetBuildVertical=$(DotnetBuildVertical)</InnerBuildArgs>
     </PropertyGroup>
   </Target>
 
