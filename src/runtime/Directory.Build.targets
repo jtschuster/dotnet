@@ -23,10 +23,10 @@
   -->
   <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
     <KnownFrameworkReference Update="@(KnownFrameworkReference->WithMetadataValue('Identity', 'Microsoft.NETCore.App')->WithMetadataValue('TargetFramework', '$(NetCoreAppCurrent)'))">
-      <RuntimePackRuntimeIdentifiers>$(PackageRID)</RuntimePackRuntimeIdentifiers>
+      <RuntimePackRuntimeIdentifiers>$(PackageRID);$(ToolsRid)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
     <KnownCrossgen2Pack Update="@(KnownCrossgen2Pack->WithMetadataValue('Identity', 'Microsoft.NETCore.App.Crossgen2')->WithMetadataValue('TargetFramework', '$(NetCoreAppCurrent)'))">
-      <Crossgen2RuntimeIdentifiers>$(PackageRID)</Crossgen2RuntimeIdentifiers>
+      <Crossgen2RuntimeIdentifiers>$(PackageRID);$(ToolsRid)</Crossgen2RuntimeIdentifiers>
     </KnownCrossgen2Pack>
     <!-- Avoid references to Microsoft.AspNetCore.App.Runtime.<rid> -->
     <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
