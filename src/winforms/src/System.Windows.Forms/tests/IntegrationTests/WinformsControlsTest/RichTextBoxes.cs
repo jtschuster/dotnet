@@ -57,12 +57,12 @@ This is a custom link\v #data#\v0  with hidden text after the link.\par
 
     private string ReportLinkClickedEventArgs(object sender, LinkClickedEventArgs e)
     {
-        var control = (RichTextBox)sender;
-        var prefix = control.Text.Remove(e.LinkStart);
-        var content = control.Text.Substring(e.LinkStart, e.LinkLength);
-        var suffix = control.Text.Substring(e.LinkStart + e.LinkLength);
+        RichTextBox control = (RichTextBox)sender;
+        string prefix = control.Text.Remove(e.LinkStart);
+        string content = control.Text.Substring(e.LinkStart, e.LinkLength);
+        string suffix = control.Text.Substring(e.LinkStart + e.LinkLength);
 
-        var index = prefix.LastIndexOf('\n');
+        int index = prefix.LastIndexOf('\n');
         if (index >= 0)
         {
             prefix = prefix.Substring(index + 1);
@@ -95,7 +95,7 @@ This is a custom link\v #data#\v0  with hidden text after the link.\par
                 if (e.Control && e.KeyCode == Keys.F)
                 {
                     richTextBox.Select();
-                    var location = richTextBox.Find(Prompt.ShowDialog(this, "", ""));
+                    int location = richTextBox.Find(Prompt.ShowDialog(this, "", ""));
                     Debug.WriteLine(location.ToString());
                 }
             }
@@ -115,7 +115,7 @@ This is a custom link\v #data#\v0  with hidden text after the link.\par
     {
         public static string ShowDialog(Form owner, string text, string caption)
         {
-            Form prompt = new Form()
+            Form prompt = new()
             {
                 Width = 500,
                 Height = 150,
@@ -124,9 +124,9 @@ This is a custom link\v #data#\v0  with hidden text after the link.\par
                 StartPosition = FormStartPosition.CenterScreen,
                 Owner = owner,
             };
-            Label textLabel = new Label() { Left = 50, Top = 20, Text = text };
-            TextBox textBox = new TextBox() { Left = 50, Top = 50, Width = 400 };
-            Button confirmation = new Button() { Text = "Ok", Left = 350, Width = 100, Top = 70, DialogResult = DialogResult.OK };
+            Label textLabel = new() { Left = 50, Top = 20, Text = text };
+            TextBox textBox = new() { Left = 50, Top = 50, Width = 400 };
+            Button confirmation = new() { Text = "Ok", Left = 350, Width = 100, Top = 70, DialogResult = DialogResult.OK };
             confirmation.Click += (sender, e) => { prompt.Close(); };
             prompt.Controls.Add(textBox);
             prompt.Controls.Add(confirmation);

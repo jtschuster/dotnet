@@ -33,6 +33,7 @@ public sealed class Cursor : IDisposable, ISerializable, IHandle<HICON>, IHandle
 
     internal unsafe Cursor(PCWSTR nResourceId, string cursorsProperty)
     {
+        GC.SuppressFinalize(this);
         _freeHandle = false;
         CursorsProperty = cursorsProperty;
         _handle = PInvoke.LoadCursor((HINSTANCE)0, nResourceId);
@@ -45,6 +46,7 @@ public sealed class Cursor : IDisposable, ISerializable, IHandle<HICON>, IHandle
     internal Cursor(string resource, string cursorsProperty)
         : this(typeof(Cursors).Assembly.GetManifestResourceStream(typeof(Cursor), resource).OrThrowIfNull())
     {
+        GC.SuppressFinalize(this);
         CursorsProperty = cursorsProperty;
         _freeHandle = false;
     }
@@ -54,6 +56,7 @@ public sealed class Cursor : IDisposable, ISerializable, IHandle<HICON>, IHandle
     /// </summary>
     public Cursor(IntPtr handle)
     {
+        GC.SuppressFinalize(this);
         if (handle == 0)
         {
             throw new ArgumentException(string.Format(SR.InvalidGDIHandle, (typeof(Cursor)).Name), nameof(handle));
@@ -418,11 +421,7 @@ public sealed class Cursor : IDisposable, ISerializable, IHandle<HICON>, IHandle
             if (picture.Value->Type == PICTYPE.PICTYPE_ICON)
             {
                 HICON cursorHandle = (HICON)picture.Value->Handle;
-                Size picSize = GetIconSize(cursorHandle);
-                if (DpiHelper.IsScalingRequired)
-                {
-                    picSize = DpiHelper.LogicalToDeviceUnits(picSize);
-                }
+                Size picSize = ScaleHelper.ScaleToDpi(GetIconSize(cursorHandle), ScaleHelper.InitialSystemDpi);
 
                 _handle = (HCURSOR)PInvoke.CopyImage(
                     (HANDLE)cursorHandle.Value,

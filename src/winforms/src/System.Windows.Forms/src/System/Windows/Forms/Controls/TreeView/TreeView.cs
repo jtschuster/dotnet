@@ -79,22 +79,20 @@ public partial class TreeView : Control
     private Collections.Specialized.BitVector32 _treeViewState; // see TREEVIEWSTATE_ consts above
 
     private static bool s_isScalingInitialized;
-    private static Size? s_scaledStateImageSize;
-    private static Size? ScaledStateImageSize
+    private static Size? s_stateImageSize;
+    private static Size? StateImageSize
     {
         get
         {
             if (!s_isScalingInitialized)
             {
-                if (DpiHelper.IsScalingRequired)
-                {
-                    s_scaledStateImageSize = DpiHelper.LogicalToDeviceUnits(new Size(16, 16));
-                }
-
+                const int LogicalStateImageSize = 16;
+                int imageSize = ScaleHelper.ScaleToInitialSystemDpi(LogicalStateImageSize);
+                s_stateImageSize = new(imageSize, imageSize);
                 s_isScalingInitialized = true;
             }
 
-            return s_scaledStateImageSize;
+            return s_stateImageSize;
         }
     }
 
@@ -103,7 +101,6 @@ public partial class TreeView : Control
         get
         {
             _imageIndexer ??= new ImageList.Indexer();
-
             _imageIndexer.ImageList = ImageList;
             return _imageIndexer;
         }
@@ -559,10 +556,7 @@ public partial class TreeView : Control
                 value = 0;
             }
 
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidLowBoundArgumentEx, nameof(ImageIndex), value, 0));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             if (ImageIndexer.Index != value)
             {
@@ -753,15 +747,8 @@ public partial class TreeView : Control
         {
             if (_indent != value)
             {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidLowBoundArgumentEx, nameof(Indent), value, 0));
-                }
-
-                if (value > MaxIndent)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidHighBoundArgumentEx, nameof(Indent), value, MaxIndent));
-                }
+                ArgumentOutOfRangeException.ThrowIfNegative(value);
+                ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxIndent);
 
                 _indent = value;
                 if (IsHandleCreated)
@@ -805,15 +792,8 @@ public partial class TreeView : Control
         {
             if (_itemHeight != value)
             {
-                if (value < 1)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidLowBoundArgumentEx, nameof(ItemHeight), value, 1));
-                }
-
-                if (value >= short.MaxValue)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidHighBoundArgument, nameof(ItemHeight), value, short.MaxValue));
-                }
+                ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+                ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, short.MaxValue);
 
                 _itemHeight = value;
                 if (IsHandleCreated)
@@ -838,7 +818,7 @@ public partial class TreeView : Control
         }
     }
 
-    internal ToolTip KeyboardToolTip { get; } = new ToolTip();
+    internal ToolTip KeyboardToolTip { get; } = new();
 
     /// <summary>
     ///  The LabelEdit property determines if the label text
@@ -1047,10 +1027,7 @@ public partial class TreeView : Control
                 value = 0;
             }
 
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidLowBoundArgumentEx, nameof(SelectedImageIndex), value, 0));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             if (SelectedImageIndexer.Index != value)
             {
@@ -1668,7 +1645,7 @@ public partial class TreeView : Control
     /// </summary>
     internal bool TreeViewBeforeCheck(TreeNode? node, TreeViewAction actionTaken)
     {
-        TreeViewCancelEventArgs viewCancelEventArgs = new TreeViewCancelEventArgs(node, false, actionTaken);
+        TreeViewCancelEventArgs viewCancelEventArgs = new(node, false, actionTaken);
         OnBeforeCheck(viewCancelEventArgs);
         return viewCancelEventArgs.Cancel;
     }
@@ -1805,9 +1782,9 @@ public partial class TreeView : Control
         Debug.Assert(_internalStateImageList is not null, "Why are changing images when the Imagelist is null?");
         if (_internalStateImageList is not null)
         {
-            if (ScaledStateImageSize is not null)
+            if (StateImageSize is not null)
             {
-                _internalStateImageList.ImageSize = (Size)ScaledStateImageSize;
+                _internalStateImageList.ImageSize = (Size)StateImageSize;
             }
 
             SetStateImageList(_internalStateImageList.Handle);
@@ -1991,9 +1968,9 @@ public partial class TreeView : Control
         }
 
         ImageList newImageList = new();
-        if (ScaledStateImageSize is not null)
+        if (StateImageSize is not null)
         {
-            newImageList.ImageSize = (Size)ScaledStateImageSize;
+            newImageList.ImageSize = (Size)StateImageSize;
         }
 
         Image[] images = new Image[_stateImageList.Images.Count + 1];
@@ -2531,7 +2508,7 @@ public partial class TreeView : Control
                 break;
         }
 
-        TreeViewCancelEventArgs e = new TreeViewCancelEventArgs(node, false, action);
+        TreeViewCancelEventArgs e = new(node, false, action);
         OnBeforeSelect(e);
 
         return (IntPtr)(e.Cancel ? 1 : 0);
@@ -2593,7 +2570,7 @@ public partial class TreeView : Control
         }
 
         TreeNode? editingNode = NodeFromHandle(nmtvdi.item.hItem);
-        NodeLabelEditEventArgs e = new NodeLabelEditEventArgs(editingNode);
+        NodeLabelEditEventArgs e = new(editingNode);
         OnBeforeLabelEdit(e);
         if (!e.CancelEdit)
         {
@@ -2627,7 +2604,7 @@ public partial class TreeView : Control
 
         TreeNode? node = NodeFromHandle(nmtvdi.item.hItem);
         string newText = nmtvdi.item.pszText.ToString();
-        NodeLabelEditEventArgs e = new NodeLabelEditEventArgs(node, newText);
+        NodeLabelEditEventArgs e = new(node, newText);
         OnAfterLabelEdit(e);
         if (newText is not null && !e.CancelEdit && node is not null)
         {
@@ -2854,10 +2831,10 @@ public partial class TreeView : Control
                     {
                         Rectangle bounds = node.Bounds;
                         Size textSize = TextRenderer.MeasureText(node.Text, node.TreeView!.Font);
-                        Point textLoc = new Point(bounds.X - 1, bounds.Y); // required to center the text
+                        Point textLoc = new(bounds.X - 1, bounds.Y); // required to center the text
                         bounds = new Rectangle(textLoc, new Size(textSize.Width, bounds.Height));
 
-                        DrawTreeNodeEventArgs e = new DrawTreeNodeEventArgs(g, node, bounds, (TreeNodeStates)(nmtvcd->nmcd.uItemState));
+                        DrawTreeNodeEventArgs e = new(g, node, bounds, (TreeNodeStates)(nmtvcd->nmcd.uItemState));
                         OnDrawNode(e);
 
                         if (e.DrawDefault)
@@ -3175,7 +3152,7 @@ public partial class TreeView : Control
             && Application.RenderWithVisualStyles && BorderStyle == BorderStyle.Fixed3D)
         {
             using Graphics g = Graphics.FromHdc((HDC)m.WParamInternal);
-            Rectangle rect = new Rectangle(0, 0, Size.Width - 1, Size.Height - 1);
+            Rectangle rect = new(0, 0, Size.Width - 1, Size.Height - 1);
             using var pen = VisualStyleInformation.TextControlBorder.GetCachedPenScope();
             g.DrawRectangle(pen, rect);
             rect.Inflate(-1, -1);

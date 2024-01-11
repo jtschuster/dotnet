@@ -63,7 +63,7 @@ public class IconEditor : UITypeEditor
         if (_fileDialog is null)
         {
             _fileDialog = new OpenFileDialog();
-            var filter = CreateFilterEntry(this);
+            string filter = CreateFilterEntry(this);
 
             Debug.Assert(s_imageExtenders.Length <= 0, "Why does IconEditor have subclasses if Icon doesn't?");
 
@@ -116,6 +116,11 @@ public class IconEditor : UITypeEditor
 
         // If icon is smaller than rectangle, just center it unscaled in the rectangle.
         Rectangle rectangle = e.Bounds;
+        Graphics g = e.Graphics;
+        using var transform = g.Transform;
+        rectangle.X -= (int)transform.OffsetX;
+        rectangle.Y -= (int)transform.OffsetY;
+
         if (icon.Width < rectangle.Width)
         {
             rectangle.X += (rectangle.Width - icon.Width) / 2;

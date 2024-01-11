@@ -229,22 +229,24 @@ public partial class ComboBox : ListControl
         }
         set
         {
-            if (_autoCompleteCustomSource != value)
+            if (_autoCompleteCustomSource == value)
             {
-                if (_autoCompleteCustomSource is not null)
-                {
-                    _autoCompleteCustomSource.CollectionChanged -= new CollectionChangeEventHandler(OnAutoCompleteCustomSourceChanged);
-                }
-
-                _autoCompleteCustomSource = value;
-
-                if (_autoCompleteCustomSource is not null)
-                {
-                    _autoCompleteCustomSource.CollectionChanged += new CollectionChangeEventHandler(OnAutoCompleteCustomSourceChanged);
-                }
-
-                SetAutoComplete(false, true);
+                return;
             }
+
+            if (_autoCompleteCustomSource is not null)
+            {
+                _autoCompleteCustomSource.CollectionChanged -= new CollectionChangeEventHandler(OnAutoCompleteCustomSourceChanged);
+            }
+
+            _autoCompleteCustomSource = value;
+
+            if (_autoCompleteCustomSource is not null)
+            {
+                _autoCompleteCustomSource.CollectionChanged += new CollectionChangeEventHandler(OnAutoCompleteCustomSourceChanged);
+            }
+
+            SetAutoComplete(false, true);
         }
     }
 
@@ -453,13 +455,7 @@ public partial class ComboBox : ListControl
         }
         set
         {
-            if (value < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    string.Format(SR.InvalidArgument, nameof(DropDownWidth), value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
 
             if (Properties.GetInteger(PropDropDownWidth) != value)
             {
@@ -496,13 +492,7 @@ public partial class ComboBox : ListControl
         }
         set
         {
-            if (value < 1)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    string.Format(SR.InvalidArgument, nameof(DropDownHeight), value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
 
             if (Properties.GetInteger(PropDropDownHeight) != value)
             {
@@ -618,7 +608,6 @@ public partial class ComboBox : ListControl
         {
             return _integralHeight;
         }
-
         set
         {
             if (_integralHeight != value)
@@ -670,13 +659,9 @@ public partial class ComboBox : ListControl
 
             return h;
         }
-
         set
         {
-            if (value < 1)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidArgument, nameof(ItemHeight), value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
 
             ResetHeightCache();
 
@@ -744,10 +729,8 @@ public partial class ComboBox : ListControl
         }
         set
         {
-            if (value < 1 || value > 100)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidBoundArgument, nameof(MaxDropDownItems), value, 1, 100));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 100);
 
             _maxDropDownItems = (short)value;
         }
@@ -872,32 +855,30 @@ public partial class ComboBox : ListControl
 
                 return _prefHeightCache;
             }
-            else
+
+            // Normally we do this sort of calculation in GetPreferredSizeCore which has builtin
+            // caching, but in this case we can not because PreferredHeight is used in ApplySizeConstraints
+            // which is used by GetPreferredSize (infinite loop).
+            if (_prefHeightCache < 0)
             {
-                // Normally we do this sort of calculation in GetPreferredSizeCore which has builtin
-                // caching, but in this case we can not because PreferredHeight is used in ApplySizeConstraints
-                // which is used by GetPreferredSize (infinite loop).
-                if (_prefHeightCache < 0)
+                Size textSize = TextRenderer.MeasureText(LayoutUtils.TestString, Font, new Size(short.MaxValue, (int)(FontHeight * 1.25)), TextFormatFlags.SingleLine);
+
+                // For a "simple" style combobox, the preferred height depends on the
+                // number of items in the combobox.
+                if (DropDownStyle == ComboBoxStyle.Simple)
                 {
-                    Size textSize = TextRenderer.MeasureText(LayoutUtils.TestString, Font, new Size(short.MaxValue, (int)(FontHeight * 1.25)), TextFormatFlags.SingleLine);
-
-                    // For a "simple" style combobox, the preferred height depends on the
-                    // number of items in the combobox.
-                    if (DropDownStyle == ComboBoxStyle.Simple)
-                    {
-                        int itemCount = Items.Count + 1;
-                        _prefHeightCache = (short)(textSize.Height * itemCount + SystemInformation.BorderSize.Height * 16 + Padding.Size.Height);
-                    }
-                    else
-                    {
-                        // We do this old school rather than use SizeFromClientSize because CreateParams calls this
-                        // method and SizeFromClientSize calls CreateParams (another infinite loop.)
-                        _prefHeightCache = (short)GetComboHeight();
-                    }
+                    int itemCount = Items.Count + 1;
+                    _prefHeightCache = (short)(textSize.Height * itemCount + SystemInformation.BorderSize.Height * 16 + Padding.Size.Height);
                 }
-
-                return _prefHeightCache;
+                else
+                {
+                    // We do this old school rather than use SizeFromClientSize because CreateParams calls this
+                    // method and SizeFromClientSize calls CreateParams (another infinite loop.)
+                    _prefHeightCache = (short)GetComboHeight();
+                }
             }
+
+            return _prefHeightCache;
         }
     }
 
@@ -982,38 +963,32 @@ public partial class ComboBox : ListControl
         }
         set
         {
-            if (SelectedIndex != value)
+            if (SelectedIndex == value)
             {
-                int itemCount = 0;
-                if (_itemsCollection is not null)
-                {
-                    itemCount = _itemsCollection.Count;
-                }
-
-                if (value < -1 || value >= itemCount)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidArgument, nameof(SelectedIndex), value));
-                }
-
-                if (IsHandleCreated)
-                {
-                    PInvoke.SendMessage(this, PInvoke.CB_SETCURSEL, (WPARAM)value);
-                }
-                else
-                {
-                    _selectedIndex = value;
-                }
-
-                UpdateText();
-
-                if (IsHandleCreated)
-                {
-                    OnTextChanged(EventArgs.Empty);
-                }
-
-                OnSelectedItemChanged(EventArgs.Empty);
-                OnSelectedIndexChanged(EventArgs.Empty);
+                return;
             }
+
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, -1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, _itemsCollection?.Count ?? 0);
+
+            if (IsHandleCreated)
+            {
+                PInvoke.SendMessage(this, PInvoke.CB_SETCURSEL, (WPARAM)value);
+            }
+            else
+            {
+                _selectedIndex = value;
+            }
+
+            UpdateText();
+
+            if (IsHandleCreated)
+            {
+                OnTextChanged(EventArgs.Empty);
+            }
+
+            OnSelectedItemChanged(EventArgs.Empty);
+            OnSelectedIndexChanged(EventArgs.Empty);
         }
     }
 
@@ -1126,13 +1101,7 @@ public partial class ComboBox : ListControl
         }
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    string.Format(SR.InvalidArgument, nameof(SelectionStart), value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             Select(value, SelectionLength);
         }
@@ -1188,31 +1157,33 @@ public partial class ComboBox : ListControl
         }
         set
         {
-            if (DropDownStyle != value)
+            if (DropDownStyle == value)
             {
-                // verify that 'value' is a valid enum type...
-                // valid values are 0x0 to 0x2
-                SourceGenerated.EnumValidator.Validate(value);
-
-                if (value == ComboBoxStyle.DropDownList
-                    && AutoCompleteSource != AutoCompleteSource.ListItems
-                    && AutoCompleteMode != AutoCompleteMode.None)
-                {
-                    AutoCompleteMode = AutoCompleteMode.None;
-                }
-
-                // reset preferred height.
-                ResetHeightCache();
-
-                Properties.SetInteger(PropStyle, (int)value);
-
-                if (IsHandleCreated)
-                {
-                    RecreateHandle();
-                }
-
-                OnDropDownStyleChanged(EventArgs.Empty);
+                return;
             }
+
+            // verify that 'value' is a valid enum type...
+            // valid values are 0x0 to 0x2
+            SourceGenerated.EnumValidator.Validate(value);
+
+            if (value == ComboBoxStyle.DropDownList
+                && AutoCompleteSource != AutoCompleteSource.ListItems
+                && AutoCompleteMode != AutoCompleteMode.None)
+            {
+                AutoCompleteMode = AutoCompleteMode.None;
+            }
+
+            // reset preferred height.
+            ResetHeightCache();
+
+            Properties.SetInteger(PropStyle, (int)value);
+
+            if (IsHandleCreated)
+            {
+                RecreateHandle();
+            }
+
+            OnDropDownStyleChanged(EventArgs.Empty);
         }
     }
 
@@ -3273,103 +3244,121 @@ public partial class ComboBox : ListControl
             return;
         }
 
-        if (AutoCompleteMode != AutoCompleteMode.None)
+        if (AutoCompleteMode == AutoCompleteMode.None)
         {
-            if (!_fromHandleCreate && recreate && IsHandleCreated)
+            if (reset)
             {
-                // RecreateHandle to avoid Leak.
-                // notice the use of member variable to avoid re-entrancy
-                AutoCompleteMode backUpMode = AutoCompleteMode;
-                _autoCompleteMode = AutoCompleteMode.None;
-                RecreateHandle();
-                _autoCompleteMode = backUpMode;
+                PInvoke.SHAutoComplete(
+                    _childEdit,
+                    SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
             }
 
-            if (AutoCompleteSource == AutoCompleteSource.CustomSource)
+            return;
+        }
+
+        if (!_fromHandleCreate && recreate && IsHandleCreated)
+        {
+            // RecreateHandle to avoid Leak.
+            // notice the use of member variable to avoid re-entrancy
+            AutoCompleteMode backUpMode = AutoCompleteMode;
+            _autoCompleteMode = AutoCompleteMode.None;
+            RecreateHandle();
+            _autoCompleteMode = backUpMode;
+        }
+
+        if (AutoCompleteSource == AutoCompleteSource.CustomSource)
+        {
+            if (AutoCompleteCustomSource is null)
             {
-                if (AutoCompleteCustomSource is not null)
-                {
-                    if (AutoCompleteCustomSource.Count == 0)
-                    {
-                        PInvoke.SHAutoComplete(_childEdit, SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
-                    }
-                    else
-                    {
-                        if (_stringSource is null)
-                        {
-                            _stringSource = new StringSource(GetStringsForAutoComplete(AutoCompleteCustomSource));
-                            if (!_stringSource.Bind(_childEdit, (AUTOCOMPLETEOPTIONS)AutoCompleteMode))
-                            {
-                                throw new ArgumentException(SR.AutoCompleteFailure);
-                            }
-                        }
-                        else
-                        {
-                            _stringSource.RefreshList(GetStringsForAutoComplete(AutoCompleteCustomSource));
-                        }
-                    }
-                }
+                return;
             }
-            else if (AutoCompleteSource == AutoCompleteSource.ListItems)
+
+            if (AutoCompleteCustomSource.Count == 0)
             {
-                if (DropDownStyle != ComboBoxStyle.DropDownList)
+                PInvoke.SHAutoComplete(
+                    _childEdit,
+                    SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
+
+                return;
+            }
+
+            if (_stringSource is null)
+            {
+                _stringSource = new StringSource(GetStringsForAutoComplete(AutoCompleteCustomSource));
+                if (!_stringSource.Bind(_childEdit, (AUTOCOMPLETEOPTIONS)AutoCompleteMode))
                 {
-                    if (_itemsCollection is not null)
-                    {
-                        if (_itemsCollection.Count == 0)
-                        {
-                            PInvoke.SHAutoComplete(_childEdit, SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
-                        }
-                        else
-                        {
-                            if (_stringSource is null)
-                            {
-                                _stringSource = new StringSource(GetStringsForAutoComplete(Items));
-                                if (!_stringSource.Bind(_childEdit, (AUTOCOMPLETEOPTIONS)AutoCompleteMode))
-                                {
-                                    throw new ArgumentException(SR.AutoCompleteFailureListItems);
-                                }
-                            }
-                            else
-                            {
-                                _stringSource.RefreshList(GetStringsForAutoComplete(Items));
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // Drop Down List special handling
-                    Debug.Assert(DropDownStyle == ComboBoxStyle.DropDownList);
-                    PInvoke.SHAutoComplete(_childEdit, SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
+                    throw new ArgumentException(SR.AutoCompleteFailure);
                 }
             }
             else
             {
-                SHELL_AUTOCOMPLETE_FLAGS mode = SHELL_AUTOCOMPLETE_FLAGS.SHACF_DEFAULT;
-                if (AutoCompleteMode == AutoCompleteMode.Suggest)
-                {
-                    mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_ON | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF;
-                }
-
-                if (AutoCompleteMode == AutoCompleteMode.Append)
-                {
-                    mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_ON | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF;
-                }
-
-                if (AutoCompleteMode == AutoCompleteMode.SuggestAppend)
-                {
-                    mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_ON;
-                    mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_ON;
-                }
-
-                PInvoke.SHAutoComplete(_childEdit.HWND, (SHELL_AUTOCOMPLETE_FLAGS)AutoCompleteSource | mode);
+                _stringSource.RefreshList(GetStringsForAutoComplete(AutoCompleteCustomSource));
             }
+
+            return;
         }
-        else if (reset)
+
+        if (AutoCompleteSource == AutoCompleteSource.ListItems)
         {
-            PInvoke.SHAutoComplete(_childEdit, SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
+            if (DropDownStyle == ComboBoxStyle.DropDownList)
+            {
+                // Drop down list special handling
+                Debug.Assert(DropDownStyle == ComboBoxStyle.DropDownList);
+                PInvoke.SHAutoComplete(
+                    _childEdit,
+                    SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
+
+                return;
+            }
+
+            if (_itemsCollection is null)
+            {
+                return;
+            }
+
+            if (_itemsCollection.Count == 0)
+            {
+                PInvoke.SHAutoComplete(
+                    _childEdit,
+                    SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF);
+
+                return;
+            }
+
+            if (_stringSource is null)
+            {
+                _stringSource = new StringSource(GetStringsForAutoComplete(Items));
+                if (!_stringSource.Bind(_childEdit, (AUTOCOMPLETEOPTIONS)AutoCompleteMode))
+                {
+                    throw new ArgumentException(SR.AutoCompleteFailureListItems);
+                }
+            }
+            else
+            {
+                _stringSource.RefreshList(GetStringsForAutoComplete(Items));
+            }
+
+            return;
         }
+
+        SHELL_AUTOCOMPLETE_FLAGS mode = SHELL_AUTOCOMPLETE_FLAGS.SHACF_DEFAULT;
+        if (AutoCompleteMode == AutoCompleteMode.Suggest)
+        {
+            mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_ON | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_OFF;
+        }
+
+        if (AutoCompleteMode == AutoCompleteMode.Append)
+        {
+            mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_ON | SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_OFF;
+        }
+
+        if (AutoCompleteMode == AutoCompleteMode.SuggestAppend)
+        {
+            mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOSUGGEST_FORCE_ON;
+            mode |= SHELL_AUTOCOMPLETE_FLAGS.SHACF_AUTOAPPEND_FORCE_ON;
+        }
+
+        PInvoke.SHAutoComplete(_childEdit.HWND, (SHELL_AUTOCOMPLETE_FLAGS)AutoCompleteSource | mode);
 
         GC.KeepAlive(this);
     }
@@ -3383,14 +3372,10 @@ public partial class ComboBox : ListControl
         ArgumentOutOfRangeException.ThrowIfNegative(start);
 
         // the Length can be negative to support Selecting in the "reverse" direction..
+        // but start + length cannot be negative... this means Length is far negative...
+        ArgumentOutOfRangeException.ThrowIfLessThan(length, -start);
+
         int end = start + length;
-
-        // but end cannot be negative... this means Length is far negative...
-        if (end < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(length), length, string.Format(SR.InvalidArgument, nameof(length), length));
-        }
-
         PInvoke.SendMessage(this, PInvoke.CB_SETEDITSEL, (WPARAM)0, LPARAM.MAKELPARAM(start, end));
     }
 
@@ -3499,28 +3484,30 @@ public partial class ComboBox : ListControl
 
     private void UpdateDropDownHeight()
     {
-        if (!_dropDownHandle.IsNull)
+        if (_dropDownHandle.IsNull)
         {
-            // Now use the DropDownHeight property instead of calculating the Height...
-            int height = DropDownHeight;
-            if (height == DefaultDropDownHeight)
-            {
-                int itemCount = (_itemsCollection is null) ? 0 : _itemsCollection.Count;
-                int count = Math.Min(Math.Max(itemCount, 1), _maxDropDownItems);
-                height = ItemHeight * count + 2;
-            }
-
-            PInvoke.SetWindowPos(
-                _dropDownHandle,
-                HWND.HWND_TOP,
-                0,
-                0,
-                DropDownWidth,
-                height,
-                SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER);
-
-            GC.KeepAlive(this);
+            return;
         }
+
+        // Now use the DropDownHeight property instead of calculating the Height...
+        int height = DropDownHeight;
+        if (height == DefaultDropDownHeight)
+        {
+            int itemCount = (_itemsCollection is null) ? 0 : _itemsCollection.Count;
+            int count = Math.Min(Math.Max(itemCount, 1), _maxDropDownItems);
+            height = ItemHeight * count + 2;
+        }
+
+        PInvoke.SetWindowPos(
+            _dropDownHandle,
+            HWND.HWND_TOP,
+            0,
+            0,
+            DropDownWidth,
+            height,
+            SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOZORDER);
+
+        GC.KeepAlive(this);
     }
 
     /// <summary>
@@ -3548,7 +3535,7 @@ public partial class ComboBox : ListControl
             for (int i = 0; i < Items.Count; i++)
             {
                 int original = (int)PInvoke.SendMessage(this, PInvoke.CB_GETITEMHEIGHT, (WPARAM)i);
-                MeasureItemEventArgs mievent = new MeasureItemEventArgs(graphics, i, original);
+                MeasureItemEventArgs mievent = new(graphics, i, original);
                 OnMeasureItem(mievent);
                 if (mievent.ItemHeight != original)
                 {

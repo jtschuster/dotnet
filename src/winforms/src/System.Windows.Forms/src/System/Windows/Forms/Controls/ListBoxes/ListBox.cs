@@ -98,59 +98,53 @@ public partial class ListBox : ListControl
     /// <summary>
     ///  Default start position of items in the checked list box
     /// </summary>
-    private const int defaultListItemStartPos = 1;
+    private const int DefaultListItemStartPos = 1;
 
     /// <summary>
     ///  Borders are 1 pixel height.
     /// </summary>
-    private const int defaultListItemBorderHeight = 1;
+    private const int DefaultListItemBorderHeight = 1;
 
     /// <summary>
     ///  Borders are 1 pixel width and a pixel buffer
     /// </summary>
-    private const int defaultListItemPaddingBuffer = 3;
+    private const int DefaultListItemPaddingBuffer = 3;
 
-    internal int scaledListItemStartPosition = defaultListItemStartPos;
-    internal int scaledListItemBordersHeight = 2 * defaultListItemBorderHeight;
-    internal int scaledListItemPaddingBuffer = defaultListItemPaddingBuffer;
+    private protected int _listItemStartPosition = DefaultListItemStartPos;
+    private protected int _listItemBordersHeight = 2 * DefaultListItemBorderHeight;
+    private protected int _listItemPaddingBuffer = DefaultListItemPaddingBuffer;
 
     /// <summary>
     ///  Creates a basic win32 list box with default values for everything.
     /// </summary>
     public ListBox() : base()
     {
-        SetStyle(ControlStyles.UserPaint |
-                 ControlStyles.StandardClick |
-                 ControlStyles.UseTextForAccessibility, false);
+        SetStyle(ControlStyles.UserPaint | ControlStyles.StandardClick | ControlStyles.UseTextForAccessibility, false);
 
-        // this class overrides GetPreferredSizeCore, let Control automatically cache the result
+        // This class overrides GetPreferredSizeCore, let Control automatically cache the result.
         SetExtendedState(ExtendedStates.UserPreferredSizeCache, true);
 
         SetBounds(0, 0, 120, 96);
-
         _requestedHeight = Height;
-
-        PrepareForDrawing();
     }
 
     protected override void RescaleConstantsForDpi(int deviceDpiOld, int deviceDpiNew)
     {
         base.RescaleConstantsForDpi(deviceDpiOld, deviceDpiNew);
-        PrepareForDrawing();
+        ScaleConstants();
     }
 
-    private void PrepareForDrawing()
+    private protected override void InitializeConstantsForInitialDpi(int initialDpi) => ScaleConstants();
+
+    private void ScaleConstants()
     {
         // Scale paddings
-        if (DpiHelper.IsScalingRequirementMet)
-        {
-            scaledListItemStartPosition = LogicalToDeviceUnits(defaultListItemStartPos);
+        _listItemStartPosition = LogicalToDeviceUnits(DefaultListItemStartPos);
 
-            // height include 2 borders ( top and bottom). we are using multiplication by 2 instead of scaling doubled value to get an even number
-            // that might helps us in positioning control in the center for list items.
-            scaledListItemBordersHeight = 2 * LogicalToDeviceUnits(defaultListItemBorderHeight);
-            scaledListItemPaddingBuffer = LogicalToDeviceUnits(defaultListItemPaddingBuffer);
-        }
+        // Height includes 2 borders (top and bottom). Multiplying by 2 instead of scaling twice guarantees an even
+        // number helps in positioning the control in the center for list items.
+        _listItemBordersHeight = 2 * LogicalToDeviceUnits(DefaultListItemBorderHeight);
+        _listItemPaddingBuffer = LogicalToDeviceUnits(DefaultListItemPaddingBuffer);
     }
 
     public override Color BackColor
@@ -591,10 +585,8 @@ public partial class ListBox : ListControl
 
         set
         {
-            if (value < 1 || value > 255)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidExBoundArgument, nameof(ItemHeight), value, 0, 256));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, 255);
 
             if (_itemHeight != value)
             {
@@ -855,12 +847,8 @@ public partial class ListBox : ListControl
         }
         set
         {
-            int itemCount = (_itemsCollection is null) ? 0 : _itemsCollection.Count;
-
-            if (value < -1 || value >= itemCount)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidArgument, nameof(SelectedIndex), value));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, -1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(value, _itemsCollection?.Count ?? 0);
 
             if (_selectionMode == SelectionMode.None)
             {
@@ -1687,7 +1675,7 @@ public partial class ListBox : ListControl
                 int count = (int)PInvoke.SendMessage(this, PInvoke.LB_GETSELCOUNT);
                 if (count > 0)
                 {
-                    var result = new int[count];
+                    int[] result = new int[count];
                     fixed (int* pResult = result)
                     {
                         PInvoke.SendMessage(this, PInvoke.LB_GETSELITEMS, (WPARAM)count, (LPARAM)pResult);
@@ -1967,7 +1955,7 @@ public partial class ListBox : ListControl
             {
                 for (int i = 0; i < cnt; i++)
                 {
-                    MeasureItemEventArgs mie = new MeasureItemEventArgs(graphics, i, ItemHeight);
+                    MeasureItemEventArgs mie = new(graphics, i, ItemHeight);
                     OnMeasureItem(mie);
                 }
             }
@@ -2342,7 +2330,7 @@ public partial class ListBox : ListControl
         if (((nint)m.LParamInternal & PInvoke.PRF_NONCLIENT) != 0 && Application.RenderWithVisualStyles && BorderStyle == BorderStyle.Fixed3D)
         {
             using Graphics g = Graphics.FromHdc((HDC)m.WParamInternal);
-            Rectangle rect = new Rectangle(0, 0, Size.Width - 1, Size.Height - 1);
+            Rectangle rect = new(0, 0, Size.Width - 1, Size.Height - 1);
             using var pen = VisualStyleInformation.TextControlBorder.GetCachedPenScope();
             g.DrawRectangle(pen, rect);
             rect.Inflate(-1, -1);

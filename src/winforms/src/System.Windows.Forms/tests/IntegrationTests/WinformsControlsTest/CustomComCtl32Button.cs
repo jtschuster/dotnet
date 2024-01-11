@@ -74,10 +74,10 @@ internal class CustomComCtl32Button : Form
 
         void DrawRoundBorder(Control sender, Graphics g)
         {
-            var isPressed = false;
+            bool isPressed = false;
             if (sender.GetType().Name == "CheckBox")
             {
-                var checkbox = (CheckBox)sender;
+                CheckBox checkbox = (CheckBox)sender;
                 isPressed = checkbox.CheckState == CheckState.Checked;
                 checkbox.Text = $"CheckBox (Button appearance) Standard {(isPressed ? "Checked" : "Unchecked")}";
             }
@@ -91,8 +91,8 @@ internal class CustomComCtl32Button : Form
             // Test possible approach to https://github.com/dotnet/winforms/issues/6514
             if (Application.RenderWithVisualStyles && !isPressed)
             {
-                GraphicsPath path = new GraphicsPath();
-                Pen pen = new Pen(SystemColors.ControlDarkDark, 1);
+                GraphicsPath path = new();
+                Pen pen = new(SystemColors.ControlDarkDark, 1);
 
                 int x = sender.ClientRectangle.X + 1;
                 int y = sender.ClientRectangle.Y + 1;

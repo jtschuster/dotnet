@@ -34,6 +34,7 @@ CHILDID_SELF
 ChildWindowFromPointEx
 CSIDL_*
 CHOOSEFONT_FLAGS
+CHOOSEFONT_FONT_TYPE
 CHOOSECOLOR_FLAGS
 CLIENTCREATESTRUCT
 ClientToScreen
@@ -118,6 +119,7 @@ DISPID_*
 DISPPARAMS
 DLGC_*
 DOCHOSTUIINFO
+DocumentProperties
 DoDragDrop
 DPI_AWARENESS_CONTEXT_*
 DPI_HOSTING_BEHAVIOR
@@ -344,15 +346,12 @@ HFONT
 HideCaret
 HIGHCONTRASTW
 HitTestThemeBackground
+HPROPSHEETPAGE
 HT*
 HTREEITEM
-HTML_HELP_COMMAND
-HtmlHelpW
-HH_AKLINK
-HH_FTS_QUERY
-HH_POPUP
 HWND_*
 IAccessible
+IAccessibleEx
 IAutoComplete2
 IClassFactory
 IClassFactory2
@@ -397,6 +396,7 @@ IHTMLElementCollection
 IHTMLWindow3
 IHTMLWindow4
 IInvokeProvider
+ILegacyIAccessibleProvider
 IMAGE_LIST_WRITE_STREAM_FLAGS
 ImageList_Add
 ImageList_Create
@@ -649,8 +649,8 @@ PeekMessage
 PostMessage
 PostThreadMessage
 PostQuitMessage
-PRF_*
 PRINTDLGEX_FLAGS
+PRF_*
 PROGRESS_CLASS
 PROPERTYKEY
 PropVariantClear
@@ -825,6 +825,7 @@ TYPE_E_BADMODULEKIND
 TYPEATTR
 TYPEDESC
 TYPEKIND
+UIA_CONTROLTYPE_ID
 UIA_EVENT_ID
 UiaAppendRuntimeId
 UiaClientsAreListening

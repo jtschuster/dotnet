@@ -56,22 +56,21 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
     private bool _alreadyHooked;
 
     private Size _imageScalingSize;
-    private const int IconDimension = 16;
-    private static int s_iconWidth = IconDimension;
-    private static int s_iconHeight = IconDimension;
+    private const int LogicalIconSize = 16;
+    private static int s_iconSize = LogicalIconSize;
 
     private Font? _defaultFont;
     private RestoreFocusMessageFilter? _restoreFocusFilter;
-    private static readonly Padding s_defaultPadding = new(0, 0, 1, 0);
-    private static readonly Padding s_defaultGripMargin = new(2);
-    private Padding _scaledDefaultPadding = s_defaultPadding;
-    private Padding _scaledDefaultGripMargin = s_defaultGripMargin;
+    private static readonly Padding s_logicalDefaultPadding = new(0, 0, 1, 0);
+    private static readonly Padding s_logicalDefaultGripMargin = new(2);
+    private Padding _defaultPadding = s_logicalDefaultPadding;
+    private Padding _defaultGripMargin = s_logicalDefaultGripMargin;
 
     private Point _mouseEnterWhenShown = s_invalidMouseEnter;
 
-    private const int InsertionBeamWidth = 6;
+    private const int LogicalInsertionBeamWidth = 6;
 
-    internal static int s_insertionBeamWidth = InsertionBeamWidth;
+    internal static int s_insertionBeamWidth = LogicalInsertionBeamWidth;
 
     private static readonly object s_eventPaintGrip = new();
     private static readonly object s_eventLayoutCompleted = new();
@@ -137,43 +136,37 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
 
     public ToolStrip()
     {
-        if (DpiHelper.IsPerMonitorV2Awareness)
+        if (ScaleHelper.IsThreadPerMonitorV2Aware)
         {
             ToolStripManager.CurrentDpi = DeviceDpi;
             _defaultFont = ToolStripManager.DefaultFont;
-            s_iconWidth = DpiHelper.LogicalToDeviceUnits(IconDimension, DeviceDpi);
-            s_iconHeight = DpiHelper.LogicalToDeviceUnits(IconDimension, DeviceDpi);
-            s_insertionBeamWidth = DpiHelper.LogicalToDeviceUnits(InsertionBeamWidth, DeviceDpi);
-            _scaledDefaultPadding = DpiHelper.LogicalToDeviceUnits(s_defaultPadding, DeviceDpi);
-            _scaledDefaultGripMargin = DpiHelper.LogicalToDeviceUnits(s_defaultGripMargin, DeviceDpi);
-        }
-        else if (DpiHelper.IsScalingRequired)
-        {
-            s_iconWidth = DpiHelper.LogicalToDeviceUnitsX(IconDimension);
-            s_iconHeight = DpiHelper.LogicalToDeviceUnitsY(IconDimension);
-            s_insertionBeamWidth = DpiHelper.LogicalToDeviceUnitsX(InsertionBeamWidth);
-            _scaledDefaultPadding = DpiHelper.LogicalToDeviceUnits(s_defaultPadding);
-            _scaledDefaultGripMargin = DpiHelper.LogicalToDeviceUnits(s_defaultGripMargin);
         }
 
-        _imageScalingSize = new Size(s_iconWidth, s_iconHeight);
+        s_insertionBeamWidth = ScaleHelper.ScaleToDpi(LogicalInsertionBeamWidth, DeviceDpi);
+        _defaultPadding = ScaleHelper.ScaleToDpi(s_logicalDefaultPadding, DeviceDpi);
+        _defaultGripMargin = ScaleHelper.ScaleToDpi(s_logicalDefaultGripMargin, DeviceDpi);
+        s_iconSize = ScaleHelper.ScaleToDpi(LogicalIconSize, DeviceDpi);
+        _imageScalingSize = new Size(s_iconSize, s_iconSize);
 
         SuspendLayout();
         CanOverflow = true;
         TabStop = false;
         MenuAutoExpand = false;
-        SetStyle(ControlStyles.OptimizedDoubleBuffer |
-                 ControlStyles.AllPaintingInWmPaint |
-                 ControlStyles.SupportsTransparentBackColor, true);
+        SetStyle(
+            ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.SupportsTransparentBackColor,
+            true);
 
         SetStyle(ControlStyles.Selectable, false);
         SetToolStripState(STATE_USEDEFAULTRENDERER | STATE_ALLOWMERGE, true);
 
-        SetExtendedState(ExtendedStates.MaintainsOwnCaptureMode // A toolstrip does not take capture on MouseDown.
-                  | ExtendedStates.UserPreferredSizeCache, // this class overrides GetPreferredSizeCore, let Control automatically cache the result
-                   true);
+        SetExtendedState(
+            // A toolstrip does not take capture on MouseDown.
+            ExtendedStates.MaintainsOwnCaptureMode
+                // This class overrides GetPreferredSizeCore, let Control automatically cache the result.
+                | ExtendedStates.UserPreferredSizeCache,
+                true);
 
-        // add a weak ref link in ToolstripManager
+        // Add a weak reference link in ToolstripManager.
         ToolStripManager.ToolStrips.Add(this);
 
         _layoutEngine = new ToolStripSplitStackLayout(this);
@@ -192,7 +185,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
         Items.AddRange(items);
     }
 
-    internal List<ToolStripDropDown> ActiveDropDowns { get; } = new List<ToolStripDropDown>(1);
+    internal List<ToolStripDropDown> ActiveDropDowns { get; } = new(1);
 
     // returns true when entered into menu mode through this toolstrip/menustrip
     // this is only really supported for menustrip active event, but to prevent casting everywhere...
@@ -334,7 +327,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
 
                 if (value)
                 {
-                    ToolStripSplitStackDragDropHandler dragDropHandler = new ToolStripSplitStackDragDropHandler(this);
+                    ToolStripSplitStackDragDropHandler dragDropHandler = new(this);
                     ItemReorderDropSource = dragDropHandler;
                     ItemReorderDropTarget = dragDropHandler;
 
@@ -567,8 +560,8 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
     ///  This is more efficient than setting the size in the control's constructor.
     /// </summary>
     protected override Size DefaultSize
-        => DpiHelper.IsPerMonitorV2Awareness ?
-           DpiHelper.LogicalToDeviceUnits(new Size(100, 25), DeviceDpi) :
+        => ScaleHelper.IsThreadPerMonitorV2Aware ?
+           ScaleHelper.ScaleToDpi(new Size(100, 25), DeviceDpi) :
            new Size(100, 25);
 
     protected override Padding DefaultPadding
@@ -577,7 +570,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
         {
             // one pixel from the right edge to prevent the right border from painting over the
             // aligned-right toolstrip item.
-            return _scaledDefaultPadding;
+            return _defaultPadding;
         }
     }
 
@@ -604,7 +597,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
             }
             else
             {
-                return _scaledDefaultGripMargin;
+                return _defaultGripMargin;
             }
         }
     }
@@ -1014,7 +1007,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
         {
             if (_imageList != value)
             {
-                EventHandler handler = new EventHandler(ImageListRecreateHandle);
+                EventHandler handler = new(ImageListRecreateHandle);
 
                 // Remove the previous imagelist handle recreate handler.
                 if (_imageList is not null)
@@ -2255,7 +2248,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
             return GetNextItemHorizontal(selectedItem, down);
         }
 
-        Point midPointOfCurrent = new Point(selectedItem.Bounds.X + selectedItem.Width / 2,
+        Point midPointOfCurrent = new(selectedItem.Bounds.X + selectedItem.Width / 2,
                                                 selectedItem.Bounds.Y + selectedItem.Height / 2);
 
         for (int i = 0; i < DisplayedItems.Count; i++)
@@ -2279,7 +2272,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
 
             // [ otherControl ]
             //       *
-            Point otherItemMidLocation = new Point(otherItem.Bounds.X + otherItem.Width / 2, (down) ? otherItem.Bounds.Top : otherItem.Bounds.Bottom);
+            Point otherItemMidLocation = new(otherItem.Bounds.X + otherItem.Width / 2, (down) ? otherItem.Bounds.Top : otherItem.Bounds.Bottom);
             int oppositeSide = otherItemMidLocation.X - midPointOfCurrent.X;
             int adjacentSide = otherItemMidLocation.Y - midPointOfCurrent.Y;
 
@@ -2578,7 +2571,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
 
     internal void HandleItemClick(ToolStripItem dismissingItem)
     {
-        ToolStripItemClickedEventArgs e = new ToolStripItemClickedEventArgs(dismissingItem);
+        ToolStripItemClickedEventArgs e = new(dismissingItem);
         OnItemClicked(e);
         // Ensure both the overflow and the main toolstrip fire ItemClick event
         // otherwise the overflow won't dismiss.
@@ -2735,7 +2728,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
 
         if (!IsCurrentlyDragging && !IsLocationChanging && IsInToolStripPanel)
         {
-            ToolStripLocationCancelEventArgs cae = new ToolStripLocationCancelEventArgs(new Point(x, y), false);
+            ToolStripLocationCancelEventArgs cae = new(new Point(x, y), false);
             try
             {
                 if (location.X != x || location.Y != y)
@@ -2787,7 +2780,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
     // with the DC translations done by base Control class. Hence we do our own Painting and the BitBLT the DC into the printerDc.
     private protected override void PrintToMetaFileRecursive(HDC hDC, IntPtr lParam, Rectangle bounds)
     {
-        using Bitmap image = new Bitmap(bounds.Width, bounds.Height);
+        using Bitmap image = new(bounds.Width, bounds.Height);
         using Graphics g = Graphics.FromImage(image);
         using DeviceContextHdcScope imageHdc = new(g, applyGraphicsState: false);
 
@@ -3307,7 +3300,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
     internal void OnDefaultFontChanged()
     {
         _defaultFont = null;
-        if (DpiHelper.IsPerMonitorV2Awareness)
+        if (ScaleHelper.IsThreadPerMonitorV2Aware)
         {
             ToolStripManager.CurrentDpi = DeviceDpi;
             _defaultFont = ToolStripManager.DefaultFont;
@@ -3762,7 +3755,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
                                 ROP_CODE.SRCCOPY);
 
                             // Paint the item into the offscreen bitmap
-                            using (PaintEventArgs itemPaintEventArgs = new PaintEventArgs(itemGraphics, clippingRect))
+                            using (PaintEventArgs itemPaintEventArgs = new(itemGraphics, clippingRect))
                             {
                                 item.FireEvent(itemPaintEventArgs, ToolStripItemEventType.Paint);
                             }
@@ -3927,7 +3920,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
     protected override void RescaleConstantsForDpi(int deviceDpiOld, int deviceDpiNew)
     {
         base.RescaleConstantsForDpi(deviceDpiOld, deviceDpiNew);
-        if (DpiHelper.IsPerMonitorV2Awareness)
+        if (ScaleHelper.IsThreadPerMonitorV2Aware)
         {
             if (deviceDpiOld != deviceDpiNew)
             {
@@ -3943,7 +3936,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
                 // ToolStripItems are components and have Font property. Components do not receive WM_DPICHANGED messages, nor they have
                 // parent-child relationship with owners and, thus, do not get scaled by parent/Container. For these reasons, they need the font
                 // to be explicitly updated when Dpi changes (only if the font was set explicitly).
-                var factor = (float)deviceDpiNew / deviceDpiOld;
+                float factor = (float)deviceDpiNew / deviceDpiOld;
                 foreach (ToolStripItem item in Items)
                 {
                     if (item.TryGetExplicitlySetFont(out Font? local))
@@ -3965,12 +3958,11 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
     /// <param name="newDpi">The new DPI passed by WmDpiChangedBeforeParent.</param>
     internal virtual void ResetScaling(int newDpi)
     {
-        s_iconWidth = DpiHelper.LogicalToDeviceUnits(IconDimension, newDpi);
-        s_iconHeight = DpiHelper.LogicalToDeviceUnits(IconDimension, newDpi);
-        s_insertionBeamWidth = DpiHelper.LogicalToDeviceUnits(InsertionBeamWidth, newDpi);
-        _scaledDefaultPadding = DpiHelper.LogicalToDeviceUnits(s_defaultPadding, newDpi);
-        _scaledDefaultGripMargin = DpiHelper.LogicalToDeviceUnits(s_defaultGripMargin, newDpi);
-        _imageScalingSize = new Size(s_iconWidth, s_iconHeight);
+        s_iconSize = ScaleHelper.ScaleToDpi(LogicalIconSize, newDpi);
+        s_insertionBeamWidth = ScaleHelper.ScaleToDpi(LogicalInsertionBeamWidth, newDpi);
+        _defaultPadding = ScaleHelper.ScaleToDpi(s_logicalDefaultPadding, newDpi);
+        _defaultGripMargin = ScaleHelper.ScaleToDpi(s_logicalDefaultGripMargin, newDpi);
+        _imageScalingSize = new Size(s_iconSize, s_iconSize);
     }
 
     /// <summary>
@@ -4075,7 +4067,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
     /// </summary>
     public ToolStripItem? GetItemAt(Point point)
     {
-        Rectangle comparisonRect = new Rectangle(point, s_onePixel);
+        Rectangle comparisonRect = new(point, s_onePixel);
         Rectangle bounds;
 
         // Check the last item we had the mouse over
@@ -4688,7 +4680,7 @@ public partial class ToolStrip : ScrollableControl, IArrangedElement, ISupportTo
 
     internal override bool ShouldSerializeMinimumSize()
     {
-        Size invalidDefaultSize = new Size(-1, -1);
+        Size invalidDefaultSize = new(-1, -1);
         return (CommonProperties.GetMinimumSize(this, invalidDefaultSize) != invalidDefaultSize);
     }
 

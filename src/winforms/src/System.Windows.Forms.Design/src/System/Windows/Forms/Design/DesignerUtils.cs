@@ -243,7 +243,7 @@ internal static class DesignerUtils
     /// </summary>
     public static void DrawGrabHandle(Graphics graphics, Rectangle bounds, bool isPrimary, Glyph glyph)
     {
-        using var hDC = new DeviceContextHdcScope(graphics, applyGraphicsState: false);
+        using DeviceContextHdcScope hDC = new(graphics, applyGraphicsState: false);
 
         // Set our pen and brush based on primary selection
         using PInvoke.SelectObjectScope brushSelection = new(hDC, isPrimary ? s_grabHandleFillBrushPrimary : s_grabHandleFillBrush);
@@ -258,7 +258,7 @@ internal static class DesignerUtils
     /// </summary>
     public static void DrawNoResizeHandle(Graphics graphics, Rectangle bounds, bool isPrimary, Glyph glyph)
     {
-        using var hDC = new DeviceContextHdcScope(graphics, applyGraphicsState: false);
+        using DeviceContextHdcScope hDC = new(graphics, applyGraphicsState: false);
 
         // Set our pen and brush based on primary selection
         using PInvoke.SelectObjectScope brushSelection = new(hDC, isPrimary ? s_grabHandleFillBrushPrimary : s_grabHandleFillBrush);
@@ -833,8 +833,7 @@ internal static class DesignerUtils
         }
     }
 
-    private static int ScaleLogicalToDeviceUnitsX(int unit)
-        => DpiHelper.IsScalingRequired ? DpiHelper.LogicalToDeviceUnitsX(unit) : unit;
+    private static int ScaleLogicalToDeviceUnitsX(int unit) => ScaleHelper.ScaleToInitialSystemDpi(unit);
 
     private static uint TreeView_GetExtendedStyle(HWND handle)
         => (uint)PInvoke.SendMessage(handle, PInvoke.TVM_GETEXTENDEDSTYLE);

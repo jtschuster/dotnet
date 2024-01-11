@@ -19,8 +19,7 @@ public partial class ToolStripPanelRow : Component, IArrangedElement
     private int _suspendCount;
     private ToolStripPanelRowManager? _rowManager;
 
-    private const int MinAllowedWidth = 50;
-    private readonly int _minAllowedWidth = MinAllowedWidth;
+    private readonly int _minAllowedWidth;
 
     private static readonly int s_stateVisible = BitVector32.CreateMask();
     private static readonly int s_stateDisposing = BitVector32.CreateMask(s_stateVisible);
@@ -52,10 +51,9 @@ public partial class ToolStripPanelRow : Component, IArrangedElement
 #if DEBUG
         _thisRowID = ++s_rowCreationCount;
 #endif
-        if (DpiHelper.IsScalingRequirementMet)
-        {
-            _minAllowedWidth = DpiHelper.LogicalToDeviceUnitsX(MinAllowedWidth);
-        }
+
+        const int LogicalMinAllowedWidth = 50;
+        _minAllowedWidth = ScaleHelper.ScaleToInitialSystemDpi(LogicalMinAllowedWidth);
 
         ToolStripPanel = parent;
         _state[s_stateVisible] = visible;
@@ -63,7 +61,7 @@ public partial class ToolStripPanelRow : Component, IArrangedElement
 
         s_toolStripPanelRowCreationDebug.TraceVerbose("Created new ToolStripPanelRow");
 
-        using (LayoutTransaction lt = new LayoutTransaction(parent, this, null))
+        using (LayoutTransaction lt = new(parent, this, null))
         {
             Margin = DefaultMargin;
             CommonProperties.SetAutoSize(this, true);
@@ -258,7 +256,7 @@ public partial class ToolStripPanelRow : Component, IArrangedElement
     ///  whose value is not always set, you should store it in here to save
     ///  space.
     /// </summary>
-    internal PropertyStore Properties { get; } = new PropertyStore();
+    internal PropertyStore Properties { get; } = new();
 
     public ToolStripPanel ToolStripPanel { get; }
 

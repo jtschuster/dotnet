@@ -30,7 +30,7 @@ internal static class ScreenshotService
                 return;
             }
 
-            var directory = Path.GetDirectoryName(fullPath)!;
+            string directory = Path.GetDirectoryName(fullPath)!;
             Directory.CreateDirectory(directory);
 
             bitmap.Save(fullPath, ImageFormat.Png);
@@ -49,8 +49,8 @@ internal static class ScreenshotService
         if (Screen.PrimaryScreen is not { } primaryScreen)
             return null;
 
-        var width = primaryScreen.Bounds.Width;
-        var height = primaryScreen.Bounds.Height;
+        int width = primaryScreen.Bounds.Width;
+        int height = primaryScreen.Bounds.Height;
 
         if (width <= 0 || height <= 0)
         {
@@ -59,7 +59,7 @@ internal static class ScreenshotService
             return null;
         }
 
-        var bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+        Bitmap bitmap = new(width, height, PixelFormat.Format32bppArgb);
 
         using (var graphics = Graphics.FromImage(bitmap))
         {
@@ -73,7 +73,7 @@ internal static class ScreenshotService
 
             if (Cursor.Current is { } cursor)
             {
-                var bounds = new Rectangle(Cursor.Position - (Size)cursor.HotSpot, cursor.Size);
+                Rectangle bounds = new(Cursor.Position - (Size)cursor.HotSpot, cursor.Size);
                 cursor.Draw(graphics, bounds);
             }
 

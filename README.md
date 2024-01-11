@@ -1,4 +1,4 @@
-﻿# dotnet/dotnet - Home of the .NET VMR
+# dotnet/dotnet - Home of the .NET VMR
 
 This repository is a **Virtual Monolithic Repository (VMR)** which includes all the source code and infrastructure needed to build the .NET SDK.
 
@@ -12,7 +12,7 @@ In the VMR, you can find:
 - small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/installer/src/SourceBuild/patches), applied on top of the original code to make the build possible,
 - *[in future]* E2E tests for the whole .NET product.
 
-Just like the development repositories, the VMR will have a release branch for every feature band (e.g. `release/8.0.1xx-preview1`).
+Just like the development repositories, the VMR will have a release branch for every feature band (e.g. `release/8.0.1xx`).
 Similarly, VMR's `main` branch will follow `main` branches of product repositories (see [Synchronization Based on Declared Dependencies](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#synchronization-based-on-declared-dependencies)).
 
 More in-depth documentation about the VMR can be found in [VMR Design And Operation](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#layout).
@@ -150,110 +150,11 @@ Alternatively, you can also provide a manifest file where this information can b
 
 Sometimes you want to make a change in a repository and test that change in the VMR. You could of course make the change in the VMR directly (locally, as the VMR is read-only for now) but in case it's already available in your repository, you can synchronize it into the VMR (again locally).
 
-To do this, you can start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace. You will see instructions right when the Codespace starts. Alternatively, you can clone the repository locally and use the `[eng/vmr-sync.sh](../../eng/vmr-sync.sh)` script to do that. Please refer to the documentation in the script for more details.
+To do this, you can either start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace - you will see instructions right after it starts. Alternatively, you can clone the repository locally and use the [eng/vmr-sync.sh](../../eng/vmr-sync.sh) script to pull your changes in. Please refer to the documentation in the script for more details.
 
 ## List of components
 
-To enable full offline source-building of the VMR, we have no other choice than to synchronize all the necessary code into the VMR. This also includes any code referenced via git submodules. More details on why and how this is done can be found here:
-- [Strategy for managing external source dependencies](src/arcade/Documentation/UnifiedBuild/VMR-Strategy-For-External-Source.md)
-- [Source Synchronization Process](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#source-synchronization-process)
-
-### Detailed list
-
-<!-- component list beginning -->
-- `src/arcade`  
-*[dotnet/arcade@8b2b5e2](https://github.com/dotnet/arcade/commit/8b2b5e29c86eaa76e6e3d6d93a1a99dce3bff27d)*
-- `src/aspire`  
-*[_git/dotnet-aspire@48e42f5](https://dev.azure.com/dnceng/internal/_git/dotnet-aspire/commit/48e42f59d64d84b404e904996a9ed61f2a17a569)*
-- `src/aspnetcore`  
-*[dotnet/aspnetcore@5088789](https://github.com/dotnet/aspnetcore/commit/5088789413c6364dccd0f36b3eddc89c4606c42f)*
-    - `src/aspnetcore/src/submodules/googletest`  
-    *[google/googletest@b3a9ba2](https://github.com/google/googletest/commit/b3a9ba2b8e975550799838332803d468797ae2e1)*
-    - `src/aspnetcore/src/submodules/MessagePack-CSharp`  
-    *[aspnet/MessagePack-CSharp@ecc4e18](https://github.com/aspnet/MessagePack-CSharp/commit/ecc4e18ad7a0c7db51cd7e3d2997a291ed01444d)*
-- `src/cecil`  
-*[dotnet/cecil@45dd3a7](https://github.com/dotnet/cecil/commit/45dd3a73dd5b64b010c4251303b3664bb30df029)*
-- `src/command-line-api`  
-*[dotnet/command-line-api@a045dd5](https://github.com/dotnet/command-line-api/commit/a045dd54a4c44723c215d992288160eb1401bb7f)*
-- `src/deployment-tools`  
-*[dotnet/deployment-tools@0d6c22d](https://github.com/dotnet/deployment-tools/commit/0d6c22d227b318fb253c967e1ac041b8e68e7e7d)*
-- `src/diagnostics`  
-*[dotnet/diagnostics@5ce78f6](https://github.com/dotnet/diagnostics/commit/5ce78f66d89ea529e459abddb129ab36cb5bd936)*
-- `src/emsdk`  
-*[dotnet/emsdk@487a0a4](https://github.com/dotnet/emsdk/commit/487a0a43dbe6e83f07b200b7523447222bb2137b)*
-- `src/format`  
-*[dotnet/format@9484e6c](https://github.com/dotnet/format/commit/9484e6ccf81af35219130eef36d23a46a92f7509)*
-- `src/fsharp`  
-*[dotnet/fsharp@2aefcec](https://github.com/dotnet/fsharp/commit/2aefcec87bf9e73a712c0c3f5b49c23358b034e8)*
-- `src/installer`  
-*[dotnet/installer@c60ffd6](https://github.com/dotnet/installer/commit/c60ffd6fd8db86ee71a90cc517816e10422382a7)*
-- `src/msbuild`  
-*[dotnet/msbuild@f97064d](https://github.com/dotnet/msbuild/commit/f97064d3b83485628dec0769659e786b55f6835a)*
-- `src/nuget-client`  
-*[nuget/nuget.client@e8b43e6](https://github.com/nuget/nuget.client/commit/e8b43e6602749844de42f9f37e07fa9aa1fb108c)*
-    - `src/nuget-client/submodules/NuGet.Build.Localization`  
-    *[NuGet/NuGet.Build.Localization@f15db7b](https://github.com/NuGet/NuGet.Build.Localization/commit/f15db7b7c6f5affbea268632ef8333d2687c8031)*
-- `src/razor`  
-*[dotnet/razor@8510297](https://github.com/dotnet/razor/commit/8510297b8a018b5660cd8c8487b1c87dc657a8cc)*
-- `src/roslyn`  
-*[dotnet/roslyn@462e180](https://github.com/dotnet/roslyn/commit/462e180642875c0540ae1379e60425f635ec4f78)*
-- `src/roslyn-analyzers`  
-*[dotnet/roslyn-analyzers@5df6c39](https://github.com/dotnet/roslyn-analyzers/commit/5df6c399d438b3bbf5813c2c732c7cbd1619cbf9)*
-- `src/runtime`  
-*[dotnet/runtime@99cfd79](https://github.com/dotnet/runtime/commit/99cfd79e7c8e8d42bc2c55f6662d64c74cbe8428)*
-- `src/scenario-tests`  
-*[dotnet/scenario-tests@0589a90](https://github.com/dotnet/scenario-tests/commit/0589a90cb11bb1daf9c05f20c1dc2d78c49075f2)*
-- `src/sdk`  
-*[dotnet/sdk@af41d3d](https://github.com/dotnet/sdk/commit/af41d3d39a69c7a17b6a3ae22259056100f23f6d)*
-- `src/source-build-externals`  
-*[dotnet/source-build-externals@bc55508](https://github.com/dotnet/source-build-externals/commit/bc555088c6b4862ad0b93fbc245ef0628e661256)*
-    - `src/source-build-externals/src/abstractions-xunit`  
-    *[xunit/abstractions.xunit@b75d54d](https://github.com/xunit/abstractions.xunit/commit/b75d54d73b141709f805c2001b16f3dd4d71539d)*
-    - `src/source-build-externals/src/application-insights`  
-    *[Microsoft/ApplicationInsights-dotnet@5e2e7dd](https://github.com/Microsoft/ApplicationInsights-dotnet/commit/5e2e7ddda961ec0e16a75b1ae0a37f6a13c777f5)*
-    - `src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet`  
-    *[AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet@bb354ce](https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet/commit/bb354ceabed19189245e075abb864f327b6c14ad)*
-    - `src/source-build-externals/src/cssparser`  
-    *[dotnet/cssparser@0d59611](https://github.com/dotnet/cssparser/commit/0d59611784841735a7778a67aa6e9d8d000c861f)*
-    - `src/source-build-externals/src/docker-creds-provider`  
-    *[mthalman/docker-creds-provider@5701f66](https://github.com/mthalman/docker-creds-provider/commit/5701f6667c1fbd805684857baaa860383bbdfed7)*
-    - `src/source-build-externals/src/humanizer`  
-    *[Humanizr/Humanizer@3ebc38d](https://github.com/Humanizr/Humanizer/commit/3ebc38de585fc641a04b0e78ed69468453b0f8a1)*
-    - `src/source-build-externals/src/MSBuildLocator`  
-    *[microsoft/MSBuildLocator@e0281df](https://github.com/microsoft/MSBuildLocator/commit/e0281df33274ac3c3e22acc9b07dcb4b31d57dc0)*
-    - `src/source-build-externals/src/newtonsoft-json`  
-    *[JamesNK/Newtonsoft.Json@0a2e291](https://github.com/JamesNK/Newtonsoft.Json/commit/0a2e291c0d9c0c7675d445703e51750363a549ef)*
-    - `src/source-build-externals/src/xunit`  
-    *[xunit/xunit@f110e5b](https://github.com/xunit/xunit/commit/f110e5bee5dfd4c08339587c9c3df9292fcb597c)*
-    - `src/source-build-externals/src/xunit/src/xunit.assert/Asserts`  
-    *[xunit/assert.xunit@5c8c10e](https://github.com/xunit/assert.xunit/commit/5c8c10e085eb42f39f2fe0b40c94bf56649eb0a4)*
-    - `src/source-build-externals/src/xunit/tools/build`  
-    *[xunit/build-tools@8e186b0](https://github.com/xunit/build-tools/commit/8e186b0f8e398796e75453f3f18952b06d29fdfd)*
-    - `src/source-build-externals/src/xunit/tools/media`  
-    *[xunit/media@5738b6e](https://github.com/xunit/media/commit/5738b6e86f08e0389c4392b939c20e3eca2d9822)*
-- `src/source-build-reference-packages`  
-*[dotnet/source-build-reference-packages@a9a44d1](https://github.com/dotnet/source-build-reference-packages/commit/a9a44d16c43525b354da1808ab73c514b3b05e7d)*
-- `src/sourcelink`  
-*[dotnet/sourcelink@20ebd36](https://github.com/dotnet/sourcelink/commit/20ebd36d6883d4b18913706c8f84baba4d478fa0)*
-- `src/symreader`  
-*[dotnet/symreader@2c8079e](https://github.com/dotnet/symreader/commit/2c8079e2e8e78c0cd11ac75a32014756136ecdb9)*
-- `src/templating`  
-*[dotnet/templating@7f7c9f2](https://github.com/dotnet/templating/commit/7f7c9f2280d30a14fef4a52719f0bf320ab46b09)*
-- `src/test-templates`  
-*[dotnet/test-templates@ec54b2c](https://github.com/dotnet/test-templates/commit/ec54b2c1553db0a544ef0e8595be2318fc12e08d)*
-- `src/vstest`  
-*[microsoft/vstest@dc8fe38](https://github.com/microsoft/vstest/commit/dc8fe3865011cef3a0891f5f55c1fc5c7f401066)*
-- `src/windowsdesktop`  
-*[dotnet/windowsdesktop@24d2994](https://github.com/dotnet/windowsdesktop/commit/24d29943d978beb39cabb14d63a9954d61826e97)*
-- `src/winforms`  
-*[dotnet/winforms@e1393ed](https://github.com/dotnet/winforms/commit/e1393ed208a58a6a2f864ac5ae9cd8ae965d236c)*
-- `src/wpf`  
-*[dotnet/wpf@8e3e1a5](https://github.com/dotnet/wpf/commit/8e3e1a550c591a7732df79f075716b88af692b43)*
-- `src/xdt`  
-*[dotnet/xdt@9a1c3e1](https://github.com/dotnet/xdt/commit/9a1c3e1b7f0c8763d4c96e593961a61a72679a7b)*
-- `src/xliff-tasks`  
-*[dotnet/xliff-tasks@194f328](https://github.com/dotnet/xliff-tasks/commit/194f32828726c3f1f63f79f3dc09b9e99c157b11)*
-<!-- component list end -->
+The full list of components synchronized into the VMR is [here (Components.md)](./Components.md).
 
 The repository also contains a [JSON manifest](https://github.com/dotnet/dotnet/blob/main/src/source-manifest.json) listing all components in a machine-readable format.
 

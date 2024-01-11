@@ -47,7 +47,7 @@ public class ContextMenuStrip : ToolStripDropDownMenu
     {
         // VERY limited support for cloning.
 
-        ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+        ContextMenuStrip contextMenuStrip = new();
 
         // copy over events
         contextMenuStrip.Events.AddHandlers(Events);
@@ -128,7 +128,7 @@ public class ContextMenuStrip : ToolStripDropDownMenu
         // Because of this inconsistency, we intentionally recreate the handle that triggers scaling according to the new DPI, after setting the "visible" property.
         if (visible
             && IsHandleCreated
-            && DpiHelper.IsPerMonitorV2Awareness
+            && ScaleHelper.IsThreadPerMonitorV2Aware
             && DeviceDpi != (int)PInvoke.GetDpiForWindow(this))
         {
             RecreateHandle();

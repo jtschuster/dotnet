@@ -64,7 +64,7 @@ public sealed partial class CodeDomComponentSerializationService
             /// </summary>
             internal void Deserialize(IDesignerSerializationManager manager, Dictionary<string, CodeDomComponentSerializationState> objectState, List<string> objectNames, bool applyDefaults)
             {
-                CodeStatementCollection completeStatements = new CodeStatementCollection();
+                CodeStatementCollection completeStatements = new();
                 _expressions.Clear();
                 _applyDefaults = applyDefaults;
                 foreach (string name in objectNames)
@@ -76,8 +76,8 @@ public sealed partial class CodeDomComponentSerializationService
                     }
                 }
 
-                CodeStatementCollection mappedStatements = new CodeStatementCollection();
-                CodeMethodMap methodMap = new CodeMethodMap(mappedStatements);
+                CodeStatementCollection mappedStatements = new();
+                CodeMethodMap methodMap = new(mappedStatements);
 
                 methodMap.Add(completeStatements);
                 methodMap.Combine();
@@ -92,7 +92,7 @@ public sealed partial class CodeDomComponentSerializationService
 
                 _objectState = new(objectState);
 
-                ResolveNameEventHandler resolveNameHandler = new ResolveNameEventHandler(OnResolveName);
+                ResolveNameEventHandler resolveNameHandler = new(OnResolveName);
                 manager.ResolveName += resolveNameHandler;
                 try
                 {
@@ -451,7 +451,7 @@ public sealed partial class CodeDomComponentSerializationService
 
                         if (needVar)
                         {
-                            CodeVariableReferenceExpression var = new CodeVariableReferenceExpression(name);
+                            CodeVariableReferenceExpression var = new(name);
                             SetExpression(manager, c, var);
                             if (!shimObjectNames.Contains(name))
                             {
@@ -472,13 +472,13 @@ public sealed partial class CodeDomComponentSerializationService
             /// </summary>
             internal void Serialize(IDesignerSerializationManager manager, Dictionary<object, ObjectData> objectData, Dictionary<string, CodeDomComponentSerializationState> objectState, IList shimObjectNames)
             {
-                if (manager.GetService<IContainer>() is {} container)
+                if (manager.GetService<IContainer>() is { } container)
                 {
                     SetupVariableReferences(manager, container, objectData, shimObjectNames);
                 }
 
                 // Next, save a statement collection for each object.
-                StatementContext statementCtx = new StatementContext();
+                StatementContext statementCtx = new();
                 statementCtx.StatementCollection.Populate(objectData.Keys);
                 manager.Context.Push(statementCtx);
                 try
@@ -488,7 +488,7 @@ public sealed partial class CodeDomComponentSerializationService
                         object? code = null;
                         CodeStatementCollection? ctxStatements = null;
                         Dictionary<string, object?>? resources = null;
-                        CodeStatementCollection extraStatements = new CodeStatementCollection();
+                        CodeStatementCollection extraStatements = new();
                         manager.Context.Push(extraStatements);
                         if (manager.TryGetSerializer(data._value.GetType(), out CodeDomSerializer? serializer))
                         {
@@ -518,7 +518,7 @@ public sealed partial class CodeDomComponentSerializationService
                             }
                             else
                             {
-                                CodeStatementCollection codeStatements = new CodeStatementCollection();
+                                CodeStatementCollection codeStatements = new();
                                 foreach (MemberData md in data.Members)
                                 {
                                     if (md._member.Attributes.Contains(DesignOnlyAttribute.Yes))

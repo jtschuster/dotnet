@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetPrevious);$(NetMinimum);netstandard2.0;$(NetFrameworkMinimum)</TargetFrameworks>
     <TargetFramework />
@@ -13,13 +14,8 @@
     <IsShipping>true</IsShipping>
     <IsShippingPackage>true</IsShippingPackage>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <!-- Re-enable baseline package validation when we can control TFMs to validate. 
-    https://github.com/dotnet/sdk/issues/35214
-    The shipped package contains net6 and net7, the current package will contain the current
-    in support versions net8 and net9 after rebranding. -->
-    <DisablePackageBaselineValidation>true</DisablePackageBaselineValidation>
     <!-- This should point to the last stable released version of this package. -->
-    <PackageValidationBaselineVersion>7.0.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>8.0.0</PackageValidationBaselineVersion>
     <AddXamarinPlaceholderFilesToPackage>true</AddXamarinPlaceholderFilesToPackage>
     <PackageDescription>Provides access to GDI+ graphics functionality.
 
@@ -82,6 +78,7 @@ Since .NET 7, non-Windows platforms are not supported, even with the runtime con
     <Compile Include="System\Drawing\Printing\PrintEventHandler.cs" />
     <Compile Include="System\Drawing\Printing\PrintAction.cs" />
     <Compile Include="System\Drawing\Printing\PrintController.cs" />
+    <Compile Include="System\Drawing\Printing\PrintController.SafeDeviceModeHandle.cs" />
     <Compile Include="System\Drawing\Printing\PrintPageEventHandler.cs" />
     <Compile Include="System\Drawing\Printing\QueryPageSettingsEventArgs.cs" />
     <Compile Include="System\Drawing\Printing\QueryPageSettingsEventHandler.cs" />
@@ -221,6 +218,11 @@ Since .NET 7, non-Windows platforms are not supported, even with the runtime con
     <Compile Include="System\Drawing\Printing\PageSettings.cs" />
     <Compile Include="System\Drawing\Printing\PrintDocument.cs" />
     <Compile Include="System\Drawing\Printing\PrinterSettings.cs" />
+    <Compile Include="System\Drawing\Printing\PrinterSettings.ArrayEnumerator.cs" />
+    <Compile Include="System\Drawing\Printing\PrinterSettings.PaperSizeCollection.cs" />
+    <Compile Include="System\Drawing\Printing\PrinterSettings.PaperSourceCollection.cs" />
+    <Compile Include="System\Drawing\Printing\PrinterSettings.PrinterResolutionCollection.cs" />
+    <Compile Include="System\Drawing\Printing\PrinterSettings.StringCollection.cs" />
     <Compile Include="System\Drawing\Printing\PrintEventArgs.cs" />
     <Compile Include="System\Drawing\Printing\PrintPageEventArgs.cs" />
     <Compile Include="System\Drawing\Printing\PrintPreviewGraphics.cs" />
@@ -355,4 +357,5 @@ Since .NET 7, non-Windows platforms are not supported, even with the runtime con
 
   <Import Project="resources.targets" />
   <Import Project="packaging.targets" />
+
 </Project>

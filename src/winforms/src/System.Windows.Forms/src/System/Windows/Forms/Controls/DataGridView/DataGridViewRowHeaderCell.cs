@@ -83,25 +83,8 @@ public partial class DataGridViewRowHeaderCell : DataGridViewHeaderCell
             ? LeftArrowStarBitmap
             : RightArrowStarBitmap;
 
-    private static Bitmap GetBitmapFromIcon(string iconName)
-    {
-        Size desiredSize = new Size(s_iconsWidth, s_iconsHeight);
-        Icon icon = new Icon(new Icon(typeof(DataGridViewHeaderCell), iconName), desiredSize);
-        Bitmap b = icon.ToBitmap();
-        icon.Dispose();
-
-        if (DpiHelper.IsScalingRequired && (b.Size.Width != s_iconsWidth || b.Size.Height != s_iconsHeight))
-        {
-            Bitmap scaledBitmap = DpiHelper.CreateResizedBitmap(b, desiredSize);
-            if (scaledBitmap is not null)
-            {
-                b.Dispose();
-                b = scaledBitmap;
-            }
-        }
-
-        return b;
-    }
+    private static Bitmap GetBitmapFromIcon(string iconName) =>
+        ScaleHelper.GetIconResourceAsBitmap(typeof(DataGridViewHeaderCell), iconName, new Size(s_iconsWidth, s_iconsHeight));
 
     protected override object? GetClipboardContent(
         int rowIndex,
@@ -716,7 +699,7 @@ public partial class DataGridViewRowHeaderCell : DataGridViewHeaderCell
                     }
 
                     // Flip the column header background
-                    using (Bitmap bmFlipXPThemes = new Bitmap(backgroundBounds.Height, backgroundBounds.Width))
+                    using (Bitmap bmFlipXPThemes = new(backgroundBounds.Height, backgroundBounds.Width))
                     {
                         using (Graphics gFlip = Graphics.FromImage(bmFlipXPThemes))
                         {
@@ -875,7 +858,7 @@ public partial class DataGridViewRowHeaderCell : DataGridViewHeaderCell
                     if (DataGridView.ShowRowErrors && valBounds.Width > s_iconsWidth + 2 * RowHeaderIconMarginWidth)
                     {
                         // Check if the text fits if we remove the room required for the row error icon
-                        Size maxBounds = new Size(valBounds.Width - s_iconsWidth - 2 * RowHeaderIconMarginWidth, valBounds.Height);
+                        Size maxBounds = new(valBounds.Width - s_iconsWidth - 2 * RowHeaderIconMarginWidth, valBounds.Height);
                         if (DataGridViewCell.TextFitsInBounds(
                             graphics,
                             formattedString,
@@ -1018,7 +1001,13 @@ public partial class DataGridViewRowHeaderCell : DataGridViewHeaderCell
                     // There is enough horizontal room for the error icon
                     if (paint && DataGridView.ShowRowErrors && DataGridViewCell.PaintErrorIcon(paintParts))
                     {
-                        PaintErrorIcon(graphics, cellStyle, rowIndex, cellBounds, errorBounds, errorText);
+                        PaintErrorIcon(
+                            graphics,
+                            cellStyle,
+                            rowIndex,
+                            cellBounds,
+                            errorBounds,
+                            errorText);
                     }
                     else if (computeErrorIconBounds)
                     {
@@ -1053,7 +1042,7 @@ public partial class DataGridViewRowHeaderCell : DataGridViewHeaderCell
         s_colorMap[0].NewColor = foreColor;
         s_colorMap[0].OldColor = Color.Black;
 
-        ImageAttributes attr = new ImageAttributes();
+        ImageAttributes attr = new();
         attr.SetRemapTable(s_colorMap, ColorAdjustType.Bitmap);
 
         if (SystemInformation.HighContrast &&

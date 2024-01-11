@@ -26,7 +26,7 @@ public partial class CheckedListBox : ListBox
     ///  Decides whether or not to ignore the next LBN_SELCHANGE message - used to prevent cursor keys from
     ///  toggling checkboxes.
     /// </summary>
-    private bool _killnextselect;
+    private bool _killNextSelect;
 
     /// <summary>
     ///  Current listener of the onItemCheck event.
@@ -148,7 +148,7 @@ public partial class CheckedListBox : ListBox
         get
         {
             // this should take FontHeight + buffer into Consideration.
-            return Font.Height + scaledListItemBordersHeight;
+            return Font.Height + _listItemBordersHeight;
         }
         set
         {
@@ -156,7 +156,7 @@ public partial class CheckedListBox : ListBox
     }
 
     /// <summary>
-    ///  Collection of items in this listbox.
+    ///  Collection of items in this <see cref="ListBox"/>
     /// </summary>
     [SRCategory(nameof(SR.CatData))]
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Content)]
@@ -172,16 +172,12 @@ public partial class CheckedListBox : ListBox
         }
     }
 
-    // Computes the maximum width of all items in the ListBox
-    //
     internal override int MaxItemWidth
     {
         get
         {
             // Overridden to include the size of the checkbox
-            // Allows for one pixel either side of the checkbox, plus another 1 pixel buffer = 3 pixels
-            //
-            return base.MaxItemWidth + _idealCheckSize + scaledListItemPaddingBuffer;
+            return base.MaxItemWidth + _idealCheckSize + _listItemPaddingBuffer;
         }
     }
 
@@ -196,8 +192,7 @@ public partial class CheckedListBox : ListBox
         {
             // valid values are 0x0 to 0x3
             SourceGenerated.EnumValidator.Validate(value);
-            if (value != SelectionMode.One
-                && value != SelectionMode.None)
+            if (value is not SelectionMode.One and not SelectionMode.None)
             {
                 throw new ArgumentException(SR.CheckedListBoxInvalidSelectionMode);
             }
@@ -248,8 +243,8 @@ public partial class CheckedListBox : ListBox
     [SRDescription(nameof(SR.UseCompatibleTextRenderingDescr))]
     public bool UseCompatibleTextRendering
     {
-        get => base.UseCompatibleTextRenderingInt;
-        set => base.UseCompatibleTextRenderingInt = value;
+        get => base.UseCompatibleTextRenderingInternal;
+        set => base.UseCompatibleTextRenderingInternal = value;
     }
 
     /// <summary>
@@ -387,7 +382,7 @@ public partial class CheckedListBox : ListBox
     public bool GetItemChecked(int index) => GetItemCheckState(index) != CheckState.Unchecked;
 
     /// <summary>
-    ///  Invalidates the given item in the listbox
+    ///  Invalidates the given item in the <see cref="ListBox"/>
     /// </summary>
     private unsafe void InvalidateItem(int index)
     {
@@ -428,14 +423,14 @@ public partial class CheckedListBox : ListBox
         AccessibilityNotifyClients(AccessibleEvents.Selection, index);
 
         // # VS7 86
-        if (!_killnextselect && (index == _lastSelected || CheckOnClick))
+        if (!_killNextSelect && (index == _lastSelected || CheckOnClick))
         {
             CheckState currentValue = CheckedItems.GetCheckedState(index);
             CheckState newValue = (currentValue != CheckState.Unchecked)
                                   ? CheckState.Unchecked
                                   : CheckState.Checked;
 
-            ItemCheckEventArgs itemCheckEvent = new ItemCheckEventArgs(index, newValue, currentValue);
+            ItemCheckEventArgs itemCheckEvent = new(index, newValue, currentValue);
             OnItemCheck(itemCheckEvent);
 
             // take whatever value the user set, and set that as the value.
@@ -456,7 +451,7 @@ public partial class CheckedListBox : ListBox
     /// </summary>
     protected override void OnClick(EventArgs e)
     {
-        _killnextselect = false;
+        _killNextSelect = false;
         base.OnClick(e);
     }
 
@@ -542,18 +537,16 @@ public partial class CheckedListBox : ListBox
                 centeringFactor = bounds.Height - _idealCheckSize;
             }
 
-            Rectangle box = new Rectangle(
-                bounds.X + scaledListItemStartPosition,
+            Rectangle box = new(
+                bounds.X + _listItemStartPosition,
                 bounds.Y + centeringFactor,
                 _idealCheckSize,
                 _idealCheckSize);
 
             if (RightToLeft == RightToLeft.Yes)
             {
-                // For a RightToLeft checked list box, we want the checkbox
-                // to be drawn at the right.
-                // So we override the X position.
-                box.X = bounds.X + bounds.Width - _idealCheckSize - scaledListItemStartPosition;
+                // Draw the CheckBox at the right.
+                box.X = bounds.X + bounds.Width - _idealCheckSize - _listItemStartPosition;
             }
 
             // Draw the checkbox.
@@ -573,17 +566,15 @@ public partial class CheckedListBox : ListBox
             }
 
             // Determine bounds for the text portion of the item
-            Rectangle textBounds = new Rectangle(
-                bounds.X + _idealCheckSize + (scaledListItemStartPosition * 2),
+            Rectangle textBounds = new(
+                bounds.X + _idealCheckSize + (_listItemStartPosition * 2),
                 bounds.Y,
-                bounds.Width - (_idealCheckSize + (scaledListItemStartPosition * 2)),
+                bounds.Width - (_idealCheckSize + (_listItemStartPosition * 2)),
                 bounds.Height);
 
             if (RightToLeft == RightToLeft.Yes)
             {
-                // For a RightToLeft checked list box, we want the text
-                // to be drawn at the left.
-                // So we override the X position.
+                // Draw text at the left.
                 textBounds.X = bounds.X;
             }
 
@@ -632,7 +623,7 @@ public partial class CheckedListBox : ListBox
                 e.GraphicsInternal.FillRectangle(brush, textBounds);
             }
 
-            Rectangle stringBounds = new Rectangle(
+            Rectangle stringBounds = new(
                 textBounds.X + BORDER_SIZE,
                 textBounds.Y,
                 textBounds.Width - BORDER_SIZE,
@@ -640,13 +631,13 @@ public partial class CheckedListBox : ListBox
 
             if (UseCompatibleTextRendering)
             {
-                using StringFormat format = new StringFormat();
+                using StringFormat format = new();
                 if (UseTabStops)
                 {
                     // Set tab stops so it looks similar to a ListBox, at least with the default font size.
                     float tabDistance = 3.6f * Font.Height; // about 7 characters
                     float[] tabStops = new float[15];
-                    float tabOffset = -(_idealCheckSize + (scaledListItemStartPosition * 2));
+                    float tabOffset = -(_idealCheckSize + (_listItemStartPosition * 2));
                     for (int i = 1; i < tabStops.Length; i++)
                     {
                         tabStops[i] = tabDistance;
@@ -725,7 +716,7 @@ public partial class CheckedListBox : ListBox
         {
             Color backColor = (SelectionMode != SelectionMode.None) ? e.BackColor : BackColor;
             Rectangle bounds = e.Bounds;
-            Rectangle emptyRectangle = new Rectangle(
+            Rectangle emptyRectangle = new(
                 bounds.X + BORDER_SIZE,
                 bounds.Y,
                 bounds.Width - BORDER_SIZE,
@@ -872,7 +863,7 @@ public partial class CheckedListBox : ListBox
 
         if (value != currentValue)
         {
-            ItemCheckEventArgs itemCheckEvent = new ItemCheckEventArgs(index, value, currentValue);
+            ItemCheckEventArgs itemCheckEvent = new(index, value, currentValue);
             OnItemCheck(itemCheckEvent);
 
             if (itemCheckEvent.NewValue != currentValue)
@@ -905,7 +896,7 @@ public partial class CheckedListBox : ListBox
                 break;
 
             case PInvoke.LBN_DBLCLK:
-                // We want double-clicks to change the checkstate on each click - just like the CheckBox control
+                // We want double-clicks to change the checkState on each click - just like the CheckBox control
                 LbnSelChange();
                 base.WmReflectCommand(ref m);
                 break;
@@ -933,10 +924,10 @@ public partial class CheckedListBox : ListBox
             case Keys.End:
             case Keys.Left:
             case Keys.Right:
-                _killnextselect = true;
+                _killNextSelect = true;
                 break;
             default:
-                _killnextselect = false;
+                _killNextSelect = false;
                 break;
         }
 
@@ -944,7 +935,7 @@ public partial class CheckedListBox : ListBox
     }
 
     /// <summary>
-    ///  The listbox's window procedure.  Inheriting classes can override this
+    ///  The listBox's window procedure.  Inheriting classes can override this
     ///  to add extra functionality, but should not forget to call
     ///  base.wndProc(m); to ensure the button continues to function properly.
     /// </summary>

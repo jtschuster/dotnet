@@ -55,15 +55,17 @@ internal class DataGridViewColumnCollectionDialog : Form
     {
         _serviceProvider = provider;
 
-        //
         // Required for Windows Form Designer support
-        //
         InitializeComponent();
 
-        if (DpiHelper.IsScalingRequired)
+        if (_moveUp.Image is Bitmap moveUp)
         {
-            _moveUp.Image = DpiHelper.ScaleButtonImageLogicalToDevice(_moveUp.Image);
-            _moveDown.Image = DpiHelper.ScaleButtonImageLogicalToDevice(_moveDown.Image);
+            _moveUp.Image = ScaleHelper.ScaleToDpi(moveUp, ScaleHelper.InitialSystemDpi, disposeBitmap: true);
+        }
+
+        if (_moveDown.Image is Bitmap moveDown)
+        {
+            _moveDown.Image = ScaleHelper.ScaleToDpi(moveDown, ScaleHelper.InitialSystemDpi, disposeBitmap: true);
         }
 
         _dataGridViewPrivateCopy = new DataGridView();
@@ -77,7 +79,9 @@ internal class DataGridViewColumnCollectionDialog : Form
         {
             if (_selectedColumnsItemBitmap is null)
             {
-                _selectedColumnsItemBitmap = new Bitmap(BitmapSelector.GetResourceStream(typeof(DataGridViewColumnCollectionDialog), "DataGridViewColumnsDialog.selectedColumns.bmp"));
+                _selectedColumnsItemBitmap = new Bitmap(
+                    BitmapSelector.GetResourceStream(typeof(DataGridViewColumnCollectionDialog), "DataGridViewColumnsDialog.selectedColumns.bmp")
+                    ?? throw new InvalidOperationException());
                 _selectedColumnsItemBitmap.MakeTransparent(Color.Red);
             }
 
@@ -470,7 +474,7 @@ internal class DataGridViewColumnCollectionDialog : Form
     [MemberNotNull(nameof(_okButton))]
     private void InitializeComponent()
     {
-        ComponentResourceManager resources = new ComponentResourceManager(typeof(DataGridViewColumnCollectionDialog));
+        ComponentResourceManager resources = new(typeof(DataGridViewColumnCollectionDialog));
         _addButton = new Button();
         _deleteButton = new Button();
         _moveDown = new Button();
@@ -480,7 +484,7 @@ internal class DataGridViewColumnCollectionDialog : Form
         _addRemoveTableLayoutPanel = new TableLayoutPanel();
         _selectedColumnsLabel = new Label();
         _propertyGridLabel = new Label();
-        _propertyGrid1 = new VsPropertyGrid(_serviceProvider);
+        _propertyGrid1 = new VsPropertyGrid();
         _okCancelTableLayoutPanel = new TableLayoutPanel();
         _cancelButton = new Button();
         _okButton = new Button();
@@ -850,7 +854,7 @@ internal class DataGridViewColumnCollectionDialog : Form
         if (_addColumnDialog is null)
         {
             // child modal dialog -launching in System Aware mode
-            _addColumnDialog = DpiHelper.CreateInstanceInSystemAwareContext(() => new DataGridViewAddColumnDialog(_columnsPrivateCopy, _liveDataGridView!));
+            _addColumnDialog = ScaleHelper.InvokeInSystemAwareContext(() => new DataGridViewAddColumnDialog(_columnsPrivateCopy, _liveDataGridView!));
             _addColumnDialog.StartPosition = FormStartPosition.CenterParent;
         }
 
@@ -906,7 +910,7 @@ internal class DataGridViewColumnCollectionDialog : Form
             // invalidate the selected index only
             int selectedIndex = _selectedColumns.SelectedIndex;
             Debug.Assert(selectedIndex != -1, "we forgot to take away the selected object from the property grid");
-            Rectangle bounds = new Rectangle(0, selectedIndex * _selectedColumns.ItemHeight, _selectedColumns.Width, _selectedColumns.ItemHeight);
+            Rectangle bounds = new(0, selectedIndex * _selectedColumns.ItemHeight, _selectedColumns.Width, _selectedColumns.ItemHeight);
             _columnCollectionChanging = true;
             try
             {
@@ -960,7 +964,7 @@ internal class DataGridViewColumnCollectionDialog : Form
 #if DGV_DITHERING
             if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
             {
-                ImageAttributes attributes = new ImageAttributes();
+                ImageAttributes attributes = new();
 
                 colorMap[0].OldColor = Color.White;
                 colorMap[0].NewColor = e.BackColor;
@@ -970,7 +974,7 @@ internal class DataGridViewColumnCollectionDialog : Form
                 //
                 attributes.SetRemapTable(colorMap, ColorAdjustType.Bitmap);
 
-                Rectangle imgRectangle = new Rectangle(e.Bounds.X + OWNERDRAWITEMIMAGEBUFFER, e.Bounds.Y + OWNERDRAWITEMIMAGEBUFFER, listBoxItem.ToolboxBitmap.Width, listBoxItem.ToolboxBitmap.Height);
+                Rectangle imgRectangle = new(e.Bounds.X + OWNERDRAWITEMIMAGEBUFFER, e.Bounds.Y + OWNERDRAWITEMIMAGEBUFFER, listBoxItem.ToolboxBitmap.Width, listBoxItem.ToolboxBitmap.Height);
                 e.Graphics.DrawImage(listBoxItem.ToolboxBitmap,
                                      imgRectangle,
                                      0,
@@ -1007,7 +1011,7 @@ internal class DataGridViewColumnCollectionDialog : Form
             // first get the text rectangle
             int textWidth = Size.Ceiling(e.Graphics.MeasureString(columnName, e.Font!, new SizeF(bounds.Width, bounds.Height))).Width;
             // DANIELHE: the spec calls for + 7 but I think that + 3 does the trick better
-            Rectangle focusRectangle = new Rectangle(bounds.X, e.Bounds.Y + 1, textWidth + _OWNERDRAWHORIZONTALBUFFER, e.Bounds.Height - 2);
+            Rectangle focusRectangle = new(bounds.X, e.Bounds.Y + 1, textWidth + _OWNERDRAWHORIZONTALBUFFER, e.Bounds.Height - 2);
 
             e.Graphics.FillRectangle(selectedBrush, focusRectangle);
             focusRectangle.Inflate(-1, -1);
@@ -1344,11 +1348,11 @@ internal class DataGridViewColumnCollectionDialog : Form
         {
             get
             {
-                EditorAttribute editorAttr = new EditorAttribute("Design.DataGridViewColumnTypeEditor, " + AssemblyRef.SystemDesign, typeof(System.Drawing.Design.UITypeEditor));
-                DescriptionAttribute descriptionAttr = new DescriptionAttribute(SR.DataGridViewColumnTypePropertyDescription);
+                EditorAttribute editorAttr = new("Design.DataGridViewColumnTypeEditor, " + AssemblyRef.SystemDesign, typeof(System.Drawing.Design.UITypeEditor));
+                DescriptionAttribute descriptionAttr = new(SR.DataGridViewColumnTypePropertyDescription);
                 CategoryAttribute categoryAttr = CategoryAttribute.Design;
                 // add the description attribute and the categories attribute
-                Attribute[] attrs = new Attribute[] { editorAttr, descriptionAttr, categoryAttr };
+                Attribute[] attrs = [editorAttr, descriptionAttr, categoryAttr];
                 return new AttributeCollection(attrs);
             }
         }

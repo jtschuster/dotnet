@@ -108,14 +108,14 @@ internal static class DpiHelper
 
     private static Bitmap ScaleBitmapToSize(Bitmap logicalImage, Size deviceImageSize)
     {
-        Bitmap deviceImage = new Bitmap(deviceImageSize.Width, deviceImageSize.Height, logicalImage.PixelFormat);
+        Bitmap deviceImage = new(deviceImageSize.Width, deviceImageSize.Height, logicalImage.PixelFormat);
 
         using var graphics = Graphics.FromImage(deviceImage);
 
         graphics.InterpolationMode = InterpolationMode;
 
-        RectangleF sourceRect = new RectangleF(0, 0, logicalImage.Size.Width, logicalImage.Size.Height);
-        RectangleF destRect = new RectangleF(0, 0, deviceImageSize.Width, deviceImageSize.Height);
+        RectangleF sourceRect = new(0, 0, logicalImage.Size.Width, logicalImage.Size.Height);
+        RectangleF destRect = new(0, 0, deviceImageSize.Width, deviceImageSize.Height);
 
         // Specify a source rectangle shifted by half of pixel to account for GDI+ considering the source origin the center of top-left pixel
         // Failing to do so will result in the right and bottom of the bitmap lines being interpolated with the graphics' background color,
@@ -167,7 +167,7 @@ internal static class DpiHelper
     /// </summary>
     /// <param name="value">The vertical value in logical units</param>
     /// <returns>The vertical value in device units</returns>
-    public static int LogicalToDeviceUnitsY(int value)
+    public static int ScaleToInitialSystemDpi(int value)
     {
         return (int)Math.Round(LogicalToDeviceUnitsScalingFactorY * (double)value);
     }
@@ -182,7 +182,7 @@ internal static class DpiHelper
     public static Size LogicalToDeviceUnits(Size logicalSize)
     {
         return new Size(LogicalToDeviceUnitsX(logicalSize.Width),
-                        LogicalToDeviceUnitsY(logicalSize.Height));
+                        ScaleToInitialSystemDpi(logicalSize.Height));
     }
 
     /// <summary>

@@ -164,7 +164,9 @@ internal sealed unsafe class LabelEditUiaTextProvider : UiaTextProvider
         PInvoke.SendMessage(_owningChildEdit, PInvoke.EM_GETSEL, ref start, ref end);
 
         ComSafeArrayScope<ITextRangeProvider> result = new(1);
-        result[0] = ComHelpers.GetComPointer<ITextRangeProvider>(new UiaTextRange(_owningChildEditAccessibilityObject, this, start, end));
+        // Adding to the SAFEARRAY adds a reference
+        using var selection = ComHelpers.GetComScope<ITextRangeProvider>(new UiaTextRange(_owningChildEditAccessibilityObject, this, start, end));
+        result[0] = selection;
         *pRetVal = result;
 
         return HRESULT.S_OK;
@@ -188,8 +190,8 @@ internal sealed unsafe class LabelEditUiaTextProvider : UiaTextProvider
 
         // Formatting rectangle is the boundary, which we need to inflate by 1
         // in order to read characters within the rectangle
-        Point ptStart = new Point(rectangle.X + 1, rectangle.Y + 1);
-        Point ptEnd = new Point(rectangle.Right - 1, rectangle.Bottom - 1);
+        Point ptStart = new(rectangle.X + 1, rectangle.Y + 1);
+        Point ptEnd = new(rectangle.Right - 1, rectangle.Bottom - 1);
 
         visibleStart = GetCharIndexFromPosition(ptStart);
         visibleEnd = GetCharIndexFromPosition(ptEnd) + 1; // Add 1 to get a caret position after received character
@@ -210,7 +212,9 @@ internal sealed unsafe class LabelEditUiaTextProvider : UiaTextProvider
         GetVisibleRangePoints(out int start, out int end);
 
         ComSafeArrayScope<ITextRangeProvider> result = new(1);
-        result[0] = ComHelpers.GetComPointer<ITextRangeProvider>(new UiaTextRange(_owningChildEditAccessibilityObject, this, start, end));
+        // Adding to the SAFEARRAY adds a reference
+        using var ranges = ComHelpers.GetComScope<ITextRangeProvider>(new UiaTextRange(_owningChildEditAccessibilityObject, this, start, end));
+        result[0] = ranges;
         *pRetVal = result;
 
         return HRESULT.S_OK;

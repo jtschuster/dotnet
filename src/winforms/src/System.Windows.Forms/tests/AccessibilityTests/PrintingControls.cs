@@ -13,12 +13,12 @@ public partial class PrintingControls : Form
         InitializeComponent();
     }
 
-    int totalNumber;// this is for total number of items of the list or array
-    int itemPerpage;// this is for no of item per page 
+    private int totalNumber;// this is for total number of items of the list or array
+    private int itemPerpage;// this is for no of item per page
     private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
     {
         float currentY = 50;// declare  one variable for height measurement
-        Font font = new Font("Times New Roman", 30);
+        Font font = new("Times New Roman", 30);
         Brush brush = Brushes.Blue;
 
         while (totalNumber <= 500) // check the number of items
@@ -50,9 +50,9 @@ public partial class PrintingControls : Form
 
     private void BtnPreView_Click(object sender, EventArgs e)
     {
-        // here we are printing 50 numbers sequentially by using loop. 
-        // For each button click event we have to reset below two variables to 0     
-        // because every time  PrintPage event fires automatically. 
+        // here we are printing 50 numbers sequentially by using loop.
+        // For each button click event we have to reset below two variables to 0
+        // because every time  PrintPage event fires automatically.
 
         itemPerpage = totalNumber = 0;
         printPreviewDialog1.Document = printDocument1;

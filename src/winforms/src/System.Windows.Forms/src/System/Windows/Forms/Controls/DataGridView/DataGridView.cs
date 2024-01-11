@@ -483,17 +483,10 @@ public partial class DataGridView : Control, ISupportInitialize
         PerformLayout();
 
         _toolTipControl = new DataGridViewToolTip(this);
-        RowHeadersWidth = ScaleToCurrentDpi(DefaultRowHeadersWidth);
-        _columnHeadersHeight = ScaleToCurrentDpi(DefaultColumnHeadersHeight);
+        RowHeadersWidth = LogicalToDeviceUnits(DefaultRowHeadersWidth);
+        _columnHeadersHeight = LogicalToDeviceUnits(DefaultColumnHeadersHeight);
         Invalidate();
     }
-
-    /// <summary>
-    ///  Scaling row header width and column header height.
-    /// </summary>
-    private int ScaleToCurrentDpi(int value) => DpiHelper.IsScalingRequirementMet
-        ? LogicalToDeviceUnits(value)
-        : value;
 
     [Browsable(false)]
     [EditorBrowsable(EditorBrowsableState.Advanced)]
@@ -925,7 +918,7 @@ public partial class DataGridView : Control, ISupportInitialize
                     previousModes[dataGridViewColumn.Index] = dataGridViewColumn.InheritedAutoSizeMode;
                 }
 
-                DataGridViewAutoSizeColumnsModeEventArgs dgvcasme = new DataGridViewAutoSizeColumnsModeEventArgs(previousModes);
+                DataGridViewAutoSizeColumnsModeEventArgs dgvcasme = new(previousModes);
                 _autoSizeColumnsMode = value;
                 OnAutoSizeColumnsModeChanged(dgvcasme);
             }
@@ -973,7 +966,7 @@ public partial class DataGridView : Control, ISupportInitialize
 
             if (_autoSizeRowsMode != value)
             {
-                DataGridViewAutoSizeModeEventArgs dgvasme = new DataGridViewAutoSizeModeEventArgs(_autoSizeRowsMode != DataGridViewAutoSizeRowsMode.None);
+                DataGridViewAutoSizeModeEventArgs dgvasme = new(_autoSizeRowsMode != DataGridViewAutoSizeRowsMode.None);
                 _autoSizeRowsMode = value;
                 OnAutoSizeRowsModeChanged(dgvasme);
             }
@@ -1398,10 +1391,7 @@ public partial class DataGridView : Control, ISupportInitialize
         get => Columns.Count;
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidLowBoundArgumentEx, nameof(ColumnCount), value, 0));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             if (DataSource is not null)
             {
@@ -1596,15 +1586,8 @@ public partial class DataGridView : Control, ISupportInitialize
         get => _columnHeadersHeight;
         set
         {
-            if (value < MinimumColumnHeadersHeight)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), string.Format(SR.InvalidLowBoundArgumentEx, nameof(ColumnHeadersHeight), value, MinimumColumnHeadersHeight));
-            }
-
-            if (value > MaxHeadersThickness)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), string.Format(SR.InvalidHighBoundArgumentEx, nameof(ColumnHeadersHeight), value, MaxHeadersThickness));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, MinimumColumnHeadersHeight);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxHeadersThickness);
 
             if (ColumnHeadersHeightSizeMode == DataGridViewColumnHeadersHeightSizeMode.AutoSize)
             {
@@ -1645,7 +1628,7 @@ public partial class DataGridView : Control, ISupportInitialize
             SourceGenerated.EnumValidator.Validate(value);
             if (_columnHeadersHeightSizeMode != value)
             {
-                DataGridViewAutoSizeModeEventArgs dgvasme = new DataGridViewAutoSizeModeEventArgs(_columnHeadersHeightSizeMode == DataGridViewColumnHeadersHeightSizeMode.AutoSize);
+                DataGridViewAutoSizeModeEventArgs dgvasme = new(_columnHeadersHeightSizeMode == DataGridViewColumnHeadersHeightSizeMode.AutoSize);
                 _columnHeadersHeightSizeMode = value;
                 OnColumnHeadersHeightSizeModeChanged(dgvasme);
             }
@@ -2009,7 +1992,7 @@ public partial class DataGridView : Control, ISupportInitialize
                 || _defaultCellStyle.Alignment == DataGridViewContentAlignment.NotSet
                 || _defaultCellStyle.WrapMode == DataGridViewTriState.NotSet)
             {
-                DataGridViewCellStyle defaultCellStyleTmp = new DataGridViewCellStyle(_defaultCellStyle)
+                DataGridViewCellStyle defaultCellStyleTmp = new(_defaultCellStyle)
                 {
                     Scope = DataGridViewCellStyleScopes.None
                 };
@@ -2361,7 +2344,7 @@ public partial class DataGridView : Control, ISupportInitialize
     {
         get
         {
-            Point ptFirstDisplayedCellAddress = new Point(-1, -1)
+            Point ptFirstDisplayedCellAddress = new(-1, -1)
             {
                 Y = Rows.GetFirstRow(DataGridViewElementStates.Visible | DataGridViewElementStates.Frozen)
             };
@@ -2820,17 +2803,14 @@ public partial class DataGridView : Control, ISupportInitialize
         set
         {
             // int widthNotVisible = this.Columns.GetColumnsWidth(DataGridViewElementStates.Visible) - this.layout.Data.Width;
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidLowBoundArgumentEx, nameof(HorizontalScrollingOffset), value, 0));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             // Intentionally ignoring the out of range situation.
-            // else if (value > widthNotVisible && widthNotVisible > 0)
+            // if (value > widthNotVisible && widthNotVisible > 0)
             // {
             //     throw new ArgumentOutOfRangeException(string.Format(SR.DataGridView_PropertyTooLarge, "HorizontalScrollingOffset", (widthNotVisible).ToString()));
             // }
-            else if (value > 0 && (Columns.GetColumnsWidth(DataGridViewElementStates.Visible) - _layout.Data.Width) <= 0)
+            if (value > 0 && (Columns.GetColumnsWidth(DataGridViewElementStates.Visible) - _layout.Data.Width) <= 0)
             {
                 // Intentionally ignoring the case where dev tries to set value while there is no horizontal scrolling possible.
                 // throw new ArgumentOutOfRangeException(nameof(HorizontalScrollingOffset), SR.DataGridView_PropertyMustBeZero);
@@ -2912,7 +2892,7 @@ public partial class DataGridView : Control, ISupportInitialize
             }
             else
             {
-                QuestionEventArgs qe = new QuestionEventArgs(_dataGridViewState1[State1_EditedRowChanged] || IsCurrentCellDirty);
+                QuestionEventArgs qe = new(_dataGridViewState1[State1_EditedRowChanged] || IsCurrentCellDirty);
                 OnRowDirtyStateNeeded(qe);
                 return qe.Response;
             }
@@ -3171,7 +3151,8 @@ public partial class DataGridView : Control, ISupportInitialize
     private void ResetCurrentCell()
     {
         if (_ptCurrentCell.X != -1 && !SetCurrentCellAddressCore(
-            -1, -1,
+            -1,
+            -1,
             setAnchorCellAddress: true,
             validateCurrentCell: true,
             throughMouseClick: false))
@@ -3207,26 +3188,7 @@ public partial class DataGridView : Control, ISupportInitialize
         get => Rows.Count;
         set
         {
-            if (AllowUserToAddRowsInternal)
-            {
-                if (value < 1)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(value),
-                        value,
-                        string.Format(SR.InvalidLowBoundArgumentEx, nameof(RowCount), value, 1));
-                }
-            }
-            else
-            {
-                if (value < 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(value),
-                        value,
-                        string.Format(SR.InvalidLowBoundArgumentEx, nameof(RowCount), value, 0));
-                }
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, AllowUserToAddRowsInternal ? 1 : 0);
 
             if (DataSource is not null)
             {
@@ -3263,7 +3225,7 @@ public partial class DataGridView : Control, ISupportInitialize
                 if (Columns.Count == 0)
                 {
                     // There are no columns yet, we simply create a single DataGridViewTextBoxColumn.
-                    DataGridViewTextBoxColumn dataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+                    DataGridViewTextBoxColumn dataGridViewTextBoxColumn = new();
                     Columns.Add(dataGridViewTextBoxColumn);
                 }
 
@@ -3445,21 +3407,8 @@ public partial class DataGridView : Control, ISupportInitialize
         get => _rowHeaderWidth;
         set
         {
-            if (value < MinimumRowHeadersWidth)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    string.Format(SR.InvalidLowBoundArgumentEx, nameof(RowHeadersWidth), value, MinimumRowHeadersWidth));
-            }
-
-            if (value > MaxHeadersThickness)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(value),
-                    value,
-                    string.Format(SR.InvalidHighBoundArgumentEx, nameof(RowHeadersWidth), value, MaxHeadersThickness));
-            }
+            ArgumentOutOfRangeException.ThrowIfLessThan(value, MinimumRowHeadersWidth);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(value, MaxHeadersThickness);
 
             if (RowHeadersWidthSizeMode is not DataGridViewRowHeadersWidthSizeMode.EnableResizing
                 and not DataGridViewRowHeadersWidthSizeMode.DisableResizing)
@@ -3704,7 +3653,7 @@ public partial class DataGridView : Control, ISupportInitialize
     {
         get
         {
-            DataGridViewSelectedCellCollection stcc = new DataGridViewSelectedCellCollection();
+            DataGridViewSelectedCellCollection stcc = new();
             switch (SelectionMode)
             {
                 case DataGridViewSelectionMode.CellSelect:
@@ -3764,7 +3713,7 @@ public partial class DataGridView : Control, ISupportInitialize
     {
         get
         {
-            DataGridViewSelectedColumnCollection strc = new DataGridViewSelectedColumnCollection();
+            DataGridViewSelectedColumnCollection strc = new();
             switch (SelectionMode)
             {
                 case DataGridViewSelectionMode.CellSelect:
@@ -3790,7 +3739,7 @@ public partial class DataGridView : Control, ISupportInitialize
     {
         get
         {
-            DataGridViewSelectedRowCollection strc = new DataGridViewSelectedRowCollection();
+            DataGridViewSelectedRowCollection strc = new();
             switch (SelectionMode)
             {
                 case DataGridViewSelectionMode.CellSelect:

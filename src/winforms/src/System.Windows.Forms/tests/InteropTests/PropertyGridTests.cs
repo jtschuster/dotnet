@@ -19,8 +19,8 @@ public class PropertyGridTests
             "App.manifest",
             () =>
             {
-                using PropertyGrid propertyGrid = new PropertyGrid();
-                var target = CreateComObjectWithStandardIErrorInfoUsage();
+                using PropertyGrid propertyGrid = new();
+                object target = CreateComObjectWithStandardIErrorInfoUsage();
                 propertyGrid.SelectedObject = target;
                 var entries = propertyGrid.GetCurrentEntries();
                 var encodingEntry = entries[0].Children.First(_ => _.PropertyName == "Int_Property");
@@ -53,8 +53,8 @@ public class PropertyGridTests
             "App.manifest",
             () =>
             {
-                using PropertyGrid propertyGrid = new PropertyGrid();
-                var target = CreateComObjectWithRawIErrorInfoUsage();
+                using PropertyGrid propertyGrid = new();
+                object target = CreateComObjectWithRawIErrorInfoUsage();
                 propertyGrid.SelectedObject = target;
                 var entries = propertyGrid.GetCurrentEntries();
                 var encodingEntry = entries[0].Children.First(_ => _.PropertyName == "Int_Property");
@@ -79,7 +79,7 @@ public class PropertyGridTests
 
     private unsafe void ExecuteWithActivationContext(string applicationManifest, Action action)
     {
-        var context = new ACTCTXW();
+        ACTCTXW context = new();
         HANDLE handle;
         fixed (char* p = applicationManifest)
         {

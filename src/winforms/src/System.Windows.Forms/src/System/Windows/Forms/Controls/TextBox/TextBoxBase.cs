@@ -8,6 +8,7 @@ using System.Drawing.Design;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms.Layout;
+using Windows.Win32.System.Variant;
 using Windows.Win32.UI.Accessibility;
 using Windows.Win32.UI.Controls.RichEdit;
 
@@ -665,10 +666,7 @@ public abstract partial class TextBoxBase : Control
         }
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidLowBoundArgumentEx, nameof(MaxLength), value, 0));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             if (_maxLength != value)
             {
@@ -1053,10 +1051,7 @@ public abstract partial class TextBoxBase : Control
 
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidArgument, nameof(SelectionLength), value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             GetSelectionStartAndLength(out int selStart, out int selLength);
 
@@ -1086,10 +1081,7 @@ public abstract partial class TextBoxBase : Control
         }
         set
         {
-            if (value < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(value), value, string.Format(SR.InvalidArgument, nameof(SelectionStart), value));
-            }
+            ArgumentOutOfRangeException.ThrowIfNegative(value);
 
             Select(value, SelectionLength);
         }
@@ -1583,6 +1575,8 @@ public abstract partial class TextBoxBase : Control
         if (IsAccessibilityObjectCreated)
         {
             AccessibilityObject.RaiseAutomationEvent(UIA_EVENT_ID.UIA_Text_TextChangedEventId);
+            using var textVariant = PasswordProtect ? (VARIANT)string.Empty : (VARIANT)Text;
+            AccessibilityObject.RaiseAutomationPropertyChangedEvent(UIA_PROPERTY_ID.UIA_ValueValuePropertyId, textVariant, textVariant);
         }
     }
 

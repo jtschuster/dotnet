@@ -290,7 +290,7 @@ namespace Paint
     {
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(source);
 
-        List<MetadataReference> references = new List<MetadataReference>();
+        List<MetadataReference> references = [];
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (Assembly assembly in assemblies)
         {
@@ -336,7 +336,7 @@ namespace Paint
         {
             Assert.True(lines.Count > 0);
 
-            var line = lines[0].Trim();
+            string line = lines[0].Trim();
             lines.RemoveAt(0);
             Assert.Equal(expected, line);
         }

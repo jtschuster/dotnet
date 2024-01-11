@@ -44,10 +44,7 @@ public abstract partial class UpDownBase : ContainerControl
     /// </summary>
     public UpDownBase()
     {
-        if (DpiHelper.IsScalingRequired)
-        {
-            _defaultButtonsWidth = LogicalToDeviceUnits(DefaultButtonsWidth);
-        }
+        _defaultButtonsWidth = LogicalToDeviceUnits(DefaultButtonsWidth);
 
         _upDownButtons = new UpDownButtons(this);
         _upDownEdit = new UpDownEdit(this)
@@ -55,16 +52,17 @@ public abstract partial class UpDownBase : ContainerControl
             BorderStyle = BorderStyle.None,
             AutoSize = false
         };
-        _upDownEdit.KeyDown += new KeyEventHandler(OnTextBoxKeyDown);
-        _upDownEdit.KeyPress += new KeyPressEventHandler(OnTextBoxKeyPress);
-        _upDownEdit.TextChanged += new EventHandler(OnTextBoxTextChanged);
-        _upDownEdit.LostFocus += new EventHandler(OnTextBoxLostFocus);
-        _upDownEdit.Resize += new EventHandler(OnTextBoxResize);
+
+        _upDownEdit.KeyDown += OnTextBoxKeyDown;
+        _upDownEdit.KeyPress += OnTextBoxKeyPress;
+        _upDownEdit.TextChanged += OnTextBoxTextChanged;
+        _upDownEdit.LostFocus += OnTextBoxLostFocus;
+        _upDownEdit.Resize += OnTextBoxResize;
         _upDownButtons.TabStop = false;
         _upDownButtons.Size = new Size(_defaultButtonsWidth, PreferredHeight);
-        _upDownButtons.UpDown += new UpDownEventHandler(OnUpDown);
+        _upDownButtons.UpDown += OnUpDown;
 
-        Controls.AddRange(new Control[] { _upDownButtons, _upDownEdit });
+        Controls.AddRange([_upDownButtons, _upDownEdit]);
 
         SetStyle(ControlStyles.Opaque | ControlStyles.FixedHeight | ControlStyles.ResizeRedraw, true);
         SetStyle(ControlStyles.StandardClick, false);
@@ -524,12 +522,12 @@ public abstract partial class UpDownBase : ContainerControl
                 Rectangle clipBounds = e.ClipRectangle;
 
                 // Draw a themed textbox-like border, which is what the spin control does
-                VisualStyleRenderer vsr = new VisualStyleRenderer(VisualStyleElement.TextBox.TextEdit.Normal);
+                VisualStyleRenderer vsr = new(VisualStyleElement.TextBox.TextEdit.Normal);
                 int border = ThemedBorderWidth;
-                Rectangle clipLeft = new Rectangle(bounds.Left, bounds.Top, border, bounds.Height);
-                Rectangle clipTop = new Rectangle(bounds.Left, bounds.Top, bounds.Width, border);
-                Rectangle clipRight = new Rectangle(bounds.Right - border, bounds.Top, border, bounds.Height);
-                Rectangle clipBottom = new Rectangle(bounds.Left, bounds.Bottom - border, bounds.Width, border);
+                Rectangle clipLeft = new(bounds.Left, bounds.Top, border, bounds.Height);
+                Rectangle clipTop = new(bounds.Left, bounds.Top, bounds.Width, border);
+                Rectangle clipRight = new(bounds.Right - border, bounds.Top, border, bounds.Height);
+                Rectangle clipBottom = new(bounds.Left, bounds.Bottom - border, bounds.Width, border);
                 clipLeft.Intersect(clipBounds);
                 clipTop.Intersect(clipBounds);
                 clipRight.Intersect(clipBounds);
@@ -832,7 +830,7 @@ public abstract partial class UpDownBase : ContainerControl
         Rectangle upDownEditBounds = Rectangle.Empty;
         Rectangle upDownButtonsBounds = Rectangle.Empty;
 
-        Rectangle clientArea = new Rectangle(Point.Empty, ClientSize);
+        Rectangle clientArea = new(Point.Empty, ClientSize);
         int totalClientWidth = clientArea.Width;
         bool themed = Application.RenderWithVisualStyles;
         BorderStyle borderStyle = BorderStyle;

@@ -276,9 +276,10 @@ public sealed partial class Application
                     }
 #endif
 
-                    using (DpiHelper.EnterDpiAwarenessScope(context))
+                    using (ScaleHelper.EnterDpiAwarenessScope(context))
                     {
                         parkingWindow = new ParkingWindow();
+                        s_parkingWindowCreated = true;
                     }
 
                     _parkingWindows.Add(parkingWindow);
@@ -569,7 +570,7 @@ public sealed partial class Application
                 }
 
                 // Then, we rudely destroy all of the windows on the thread
-                ThreadWindows tw = new ThreadWindows(true);
+                ThreadWindows tw = new(true);
                 tw.Dispose();
 
                 // And dispose the parking form, if it isn't already

@@ -333,7 +333,7 @@ internal class DataGridViewDesigner : ControlDesigner
             // 4. set AutoGenerateColumns to TRUE.
             //
 
-            IComponentChangeService componentChangeService = (IComponentChangeService)GetService(typeof(IComponentChangeService));
+            IComponentChangeService? componentChangeService = GetService<IComponentChangeService>();
             string previousDataMember = dataGridView.DataMember;
 
             PropertyDescriptorCollection props = TypeDescriptor.GetProperties(dataGridView);
@@ -805,7 +805,8 @@ internal class DataGridViewDesigner : ControlDesigner
         IDesignerHost? host = Component.Site?.GetService(typeof(IDesignerHost)) as IDesignerHost;
 
         // child modal dialog -launching in System Aware mode
-        DataGridViewColumnCollectionDialog dialog = DpiHelper.CreateInstanceInSystemAwareContext(() => new DataGridViewColumnCollectionDialog(((DataGridView)Component!).Site!));
+        DataGridViewColumnCollectionDialog dialog = ScaleHelper.InvokeInSystemAwareContext(
+            () => new DataGridViewColumnCollectionDialog(((DataGridView)Component!).Site!));
         dialog.SetLiveDataGridView((DataGridView)Component);
         DesignerTransaction? transaction = host?.CreateTransaction(SR.DataGridViewEditColumnsTransactionString);
         DialogResult result = DialogResult.Cancel;
@@ -834,8 +835,9 @@ internal class DataGridViewDesigner : ControlDesigner
         DialogResult result = DialogResult.Cancel;
 
         // child modal dialog -launching in System Aware mode
-        DataGridViewAddColumnDialog dialog = DpiHelper.CreateInstanceInSystemAwareContext(() => new DataGridViewAddColumnDialog(((DataGridView)Component).Columns, (DataGridView)Component));
-        dialog.Start(((DataGridView)Component).Columns.Count, true /*persistChangesToDesigner*/);
+        DataGridViewAddColumnDialog dialog = ScaleHelper.InvokeInSystemAwareContext(
+            () => new DataGridViewAddColumnDialog(((DataGridView)Component).Columns, (DataGridView)Component));
+        dialog.Start(((DataGridView)Component).Columns.Count, persistChangesToDesigner: true);
 
         try
         {
@@ -879,8 +881,8 @@ internal class DataGridViewDesigner : ControlDesigner
 
         public override DesignerActionItemCollection GetSortedActionItems()
         {
-            DesignerActionItemCollection items = new DesignerActionItemCollection();
-            DesignerActionPropertyItem chooseDataSource = new DesignerActionPropertyItem("DataSource", // property name
+            DesignerActionItemCollection items = new();
+            DesignerActionPropertyItem chooseDataSource = new("DataSource", // property name
                                                                SR.DataGridViewChooseDataSource);// displayName
             chooseDataSource.RelatedComponent = _owner.Component;
             items.Add(chooseDataSource);
@@ -938,7 +940,7 @@ internal class DataGridViewDesigner : ControlDesigner
 
         public override DesignerActionItemCollection GetSortedActionItems()
         {
-            DesignerActionItemCollection items = new DesignerActionItemCollection();
+            DesignerActionItemCollection items = new();
             items.Add(new DesignerActionMethodItem(this,
                         "EditColumns",                      // method name
                         SR.DataGridViewEditColumnsVerb,   // display name
@@ -979,7 +981,7 @@ internal class DataGridViewDesigner : ControlDesigner
 
         public override DesignerActionItemCollection GetSortedActionItems()
         {
-            DesignerActionItemCollection items = new DesignerActionItemCollection();
+            DesignerActionItemCollection items = new();
             items.Add(new DesignerActionPropertyItem("AllowUserToAddRows",
                                                         SR.DataGridViewEnableAdding));
             items.Add(new DesignerActionPropertyItem("ReadOnly",

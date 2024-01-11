@@ -138,9 +138,9 @@ public class BindingNavigator : ToolStrip, ISupportInitialize
         AddNewItem = new ToolStripButton();
         DeleteItem = new ToolStripButton();
 
-        ToolStripSeparator separator1 = new ToolStripSeparator();
-        ToolStripSeparator separator2 = new ToolStripSeparator();
-        ToolStripSeparator separator3 = new ToolStripSeparator();
+        ToolStripSeparator separator1 = new();
+        ToolStripSeparator separator2 = new();
+        ToolStripSeparator separator3 = new();
 
         //
         // Set up strings
@@ -175,16 +175,15 @@ public class BindingNavigator : ToolStrip, ISupportInitialize
         PositionItem.AutoToolTip = false;
 
         PositionItem.AccessibleName = SR.BindingNavigatorPositionAccessibleName;
-        //
-        // Set up images
-        //
 
-        Bitmap moveFirstImage = DpiHelper.GetBitmapFromIcon(typeof(BindingNavigator), "BindingNavigator.MoveFirst");
-        Bitmap movePreviousImage = DpiHelper.GetBitmapFromIcon(typeof(BindingNavigator), "BindingNavigator.MovePrevious");
-        Bitmap moveNextImage = DpiHelper.GetBitmapFromIcon(typeof(BindingNavigator), "BindingNavigator.MoveNext");
-        Bitmap moveLastImage = DpiHelper.GetBitmapFromIcon(typeof(BindingNavigator), "BindingNavigator.MoveLast");
-        Bitmap addNewImage = DpiHelper.GetBitmapFromIcon(typeof(BindingNavigator), "BindingNavigator.AddNew");
-        Bitmap deleteImage = DpiHelper.GetBitmapFromIcon(typeof(BindingNavigator), "BindingNavigator.Delete");
+        // Set up images
+
+        Bitmap moveFirstImage = ScaleHelper.GetIconResourceAsDefaultSizeBitmap(typeof(BindingNavigator), "BindingNavigator.MoveFirst");
+        Bitmap movePreviousImage = ScaleHelper.GetIconResourceAsDefaultSizeBitmap(typeof(BindingNavigator), "BindingNavigator.MovePrevious");
+        Bitmap moveNextImage = ScaleHelper.GetIconResourceAsDefaultSizeBitmap(typeof(BindingNavigator), "BindingNavigator.MoveNext");
+        Bitmap moveLastImage = ScaleHelper.GetIconResourceAsDefaultSizeBitmap(typeof(BindingNavigator), "BindingNavigator.MoveLast");
+        Bitmap addNewImage = ScaleHelper.GetIconResourceAsDefaultSizeBitmap(typeof(BindingNavigator), "BindingNavigator.AddNew");
+        Bitmap deleteImage = ScaleHelper.GetIconResourceAsDefaultSizeBitmap(typeof(BindingNavigator), "BindingNavigator.Delete");
 
         MoveFirstItem.Image = moveFirstImage;
         MovePreviousItem.Image = movePreviousImage;
@@ -541,7 +540,7 @@ public class BindingNavigator : ToolStrip, ISupportInitialize
 
             if (AddNewItem is not null)
             {
-                EventHandler handler = new EventHandler(OnAddNewItemEnabledChanged);
+                EventHandler handler = new(OnAddNewItemEnabledChanged);
                 _addNewItem!.InternalEnabledChanged -= handler;
                 _addNewItem.Enabled = (_addNewItemUserEnabled && allowNew);
                 _addNewItem.InternalEnabledChanged += handler;
@@ -549,7 +548,7 @@ public class BindingNavigator : ToolStrip, ISupportInitialize
 
             if (DeleteItem is not null)
             {
-                EventHandler handler = new EventHandler(OnDeleteItemEnabledChanged);
+                EventHandler handler = new(OnDeleteItemEnabledChanged);
                 _deleteItem!.InternalEnabledChanged -= handler;
                 _deleteItem.Enabled = (_deleteItemUserEnabled && allowRemove && count > 0);
                 _deleteItem.InternalEnabledChanged += handler;

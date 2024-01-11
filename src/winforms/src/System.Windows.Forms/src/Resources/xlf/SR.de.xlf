@@ -5849,11 +5849,6 @@ Stapelüberwachung, in der der unzulässige Vorgang auftrat:
         <target state="translated">Der für dieses Steuerelement durchgeführte Vorgang wird vom falschen Thread aufgerufen. Marshallen Sie den richtigen Thread mit Control.Invoke oder Control.BeginInvoke, um den Vorgang auszuführen.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidExBoundArgument">
-        <source>Value of '{1}' is not valid for '{0}'. '{0}' should be greater than {2} and less than {3}.</source>
-        <target state="translated">Der Wert {1} ist für {0} ungültig. {0} muss größer als {2} und kleiner als {3} sein.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InvalidFileFormat">
         <source>File format is not valid.</source>
         <target state="translated">Ungültiges Dateiformat.</target>
@@ -5872,26 +5867,6 @@ Stapelüberwachung, in der der unzulässige Vorgang auftrat:
       <trans-unit id="InvalidHdcType">
         <source>Invalid HDC type: {0}</source>
         <target state="translated">Ungültiger HDC-Typ: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidHighBoundArgument">
-        <source>Value of '{1}' is not valid for '{0}'. '{0}' must be less than {2}.</source>
-        <target state="translated">Der Wert {1} ist für {0} ungültig. {0} muss kleiner als {2} sein.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidHighBoundArgumentEx">
-        <source>Value of '{1}' is not valid for '{0}'. '{0}' must be less than or equal to {2}.</source>
-        <target state="translated">Der Wert {1} ist für {0} ungültig. {0} muss kleiner als oder gleich {2} sein.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidLowBoundArgument">
-        <source>Value of '{1}' is not valid for '{0}'. '{0}' must be greater than {2}.</source>
-        <target state="translated">Der Wert {1} ist für {0} ungültig. {0} muss größer als {2} sein.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidLowBoundArgumentEx">
-        <source>Value of '{1}' is not valid for '{0}'. '{0}' must be greater than or equal to {2}.</source>
-        <target state="translated">Der Wert {1} ist für {0} ungültig. {0} muss größer als oder gleich {2} sein.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidNullArgument">
@@ -10227,6 +10202,11 @@ Stapelüberwachung, in der der unzulässige Vorgang auftrat:
       <trans-unit id="ToolStripItemRightToLeftDescr">
         <source>Indicates whether the item should draw right-to-left for RTL languages.</source>
         <target state="translated">Zeigt an, ob das Element für RTL-Sprachen von rechts nach links gezeichnet werden soll.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolStripItemSelectedChangedDescr">
+        <source>Occurs when the Selected property value changes.</source>
+        <target state="translated">Tritt ein, wenn sich der ausgewählte Eigenschaftswert ändert.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolStripItemSize">

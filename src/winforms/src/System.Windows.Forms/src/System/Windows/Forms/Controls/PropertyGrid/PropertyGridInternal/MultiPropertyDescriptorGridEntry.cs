@@ -234,7 +234,7 @@ internal sealed class MultiPropertyDescriptorGridEntry : PropertyDescriptorGridE
             {
                 for (int i = 0; i < ownerArray.Length; i++)
                 {
-                    PropertyDescriptor propertyInfo = propertyEntry.PropertyDescriptor;
+                    PropertyDescriptor propertyInfo = entry.PropertyDescriptor;
 
                     if (propertyInfo is MergePropertyDescriptor descriptor)
                     {
@@ -243,7 +243,7 @@ internal sealed class MultiPropertyDescriptorGridEntry : PropertyDescriptorGridE
 
                     if (propertyInfo is not null)
                     {
-                        var component = ownerArray.GetValue(i)!;
+                        object component = ownerArray.GetValue(i)!;
                         changeService.OnComponentChanging(component, propertyInfo);
                         changeService.OnComponentChanged(component, propertyInfo);
                     }
@@ -251,8 +251,8 @@ internal sealed class MultiPropertyDescriptorGridEntry : PropertyDescriptorGridE
             }
             else
             {
-                changeService.OnComponentChanging(owner, propertyEntry.PropertyDescriptor);
-                changeService.OnComponentChanged(owner, propertyEntry.PropertyDescriptor);
+                changeService.OnComponentChanging(owner, entry.PropertyDescriptor);
+                changeService.OnComponentChanged(owner, entry.PropertyDescriptor);
             }
         }
     }
@@ -321,7 +321,7 @@ internal sealed class MultiPropertyDescriptorGridEntry : PropertyDescriptorGridE
                         EventDescriptor? eventDescriptor = _eventBindings.GetEvent(mergeDescriptor[0]);
                         if (eventDescriptor is not null)
                         {
-                            return ViewEvent(owner, null, eventDescriptor, true);
+                            return ViewEvent(owner, newHandler: null, eventDescriptor, alwaysNavigate: true);
                         }
                     }
 

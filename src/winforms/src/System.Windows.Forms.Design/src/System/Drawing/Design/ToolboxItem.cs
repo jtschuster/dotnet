@@ -34,12 +34,8 @@ public class ToolboxItem : ISerializable
     {
         if (!s_isScalingInitialized)
         {
-            if (DpiHelper.IsScalingRequired)
-            {
-                s_iconWidth = DpiHelper.LogicalToDeviceUnitsX(ICON_DIMENSION);
-                s_iconHeight = DpiHelper.LogicalToDeviceUnitsY(ICON_DIMENSION);
-            }
-
+            s_iconWidth = ScaleHelper.ScaleToInitialSystemDpi(ICON_DIMENSION);
+            s_iconHeight = ScaleHelper.ScaleToInitialSystemDpi(ICON_DIMENSION);
             s_isScalingInitialized = true;
         }
     }
@@ -553,7 +549,7 @@ public class ToolboxItem : ISerializable
             TypeName = type.FullName;
             AssemblyName assemblyName = type.Assembly.GetName(true);
 
-            Dictionary<string, AssemblyName> parents = new Dictionary<string, AssemblyName>();
+            Dictionary<string, AssemblyName> parents = new();
             Type? parentType = type;
 
             do

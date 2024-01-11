@@ -446,7 +446,7 @@ public partial class DataGridViewButtonCell : DataGridViewCell
     {
         if (s_rectThemeMargins.X == -1)
         {
-            Rectangle rectCell = new Rectangle(0, 0, DATAGRIDVIEWBUTTONCELL_themeMargin, DATAGRIDVIEWBUTTONCELL_themeMargin);
+            Rectangle rectCell = new(0, 0, DATAGRIDVIEWBUTTONCELL_themeMargin, DATAGRIDVIEWBUTTONCELL_themeMargin);
             Rectangle rectContent = DataGridViewButtonCellRenderer.DataGridViewButtonRenderer.GetBackgroundContentRectangle(g, rectCell);
             s_rectThemeMargins.X = rectContent.X;
             s_rectThemeMargins.Y = rectContent.Y;
@@ -954,7 +954,7 @@ public partial class DataGridViewButtonCell : DataGridViewCell
                     ButtonBaseAdapter.DrawFlatFocus(
                         g,
                         layout.Focus,
-                        colors.Options.HighContrast ? colors.WindowText : colors.ConstrastButtonShadow);
+                        colors.Options.HighContrast ? colors.WindowText : colors.ContrastButtonShadow);
                 }
             }
             else

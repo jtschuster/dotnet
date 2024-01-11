@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetCurrent);$(NetMinimum)</TargetFrameworks>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <AssemblyName>xunit.assert</AssemblyName>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <Description>This package is a fork of xunit.assert that is AOT-compatible.</Description>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <IsTestUtilityProject>true</IsTestUtilityProject>
     <DefineConstants>$(DefineConstants);XUNIT_NULLABLE;XUNIT_SPAN;XUNIT_AOT</DefineConstants>
     <IsTrimmable>true</IsTrimmable>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>

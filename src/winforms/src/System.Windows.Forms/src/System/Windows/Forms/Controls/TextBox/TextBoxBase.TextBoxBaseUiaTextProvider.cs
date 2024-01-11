@@ -45,7 +45,9 @@ public abstract partial class TextBoxBase
             PInvoke.SendMessage(Owner, PInvoke.EM_GETSEL, ref start, ref end);
 
             ComSafeArrayScope<ITextRangeProvider> result = new(1);
-            result[0] = ComHelpers.GetComPointer<ITextRangeProvider>(new UiaTextRange(Owner.AccessibilityObject, this, start, end));
+            // Adding to the SAFEARRAY adds a reference
+            using var selection = ComHelpers.GetComScope<ITextRangeProvider>(new UiaTextRange(Owner.AccessibilityObject, this, start, end));
+            result[0] = selection;
 
             *pRetVal = result;
             return HRESULT.S_OK;
@@ -67,7 +69,9 @@ public abstract partial class TextBoxBase
             GetVisibleRangePoints(out int start, out int end);
 
             ComSafeArrayScope<ITextRangeProvider> result = new(1);
-            result[0] = ComHelpers.GetComPointer<ITextRangeProvider>(new UiaTextRange(Owner.AccessibilityObject, this, start, end));
+            // Adding to the SAFEARRAY adds a reference
+            using var ranges = ComHelpers.GetComScope<ITextRangeProvider>(new UiaTextRange(Owner.AccessibilityObject, this, start, end));
+            result[0] = ranges;
 
             *pRetVal = result;
             return HRESULT.S_OK;
@@ -364,8 +368,8 @@ public abstract partial class TextBoxBase
 
             // Formatting rectangle is the boundary, which we need to inflate by 1
             // in order to read characters within the rectangle
-            Point ptStart = new Point(rectangle.X + 1, rectangle.Y + 1);
-            Point ptEnd = new Point(rectangle.Right - 1, rectangle.Bottom - 1);
+            Point ptStart = new(rectangle.X + 1, rectangle.Y + 1);
+            Point ptEnd = new(rectangle.Right - 1, rectangle.Bottom - 1);
 
             if (IsMultiline)
             {

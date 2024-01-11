@@ -107,38 +107,36 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
     public ToolStripTemplateNode(IComponent component, string text, Image image)
     {
         _component = component;
-        // In most of the cases this is true; except for ToolStripItems on DropDowns. the toolstripMenuItemDesigners sets the public property in those cases.
+
+        // In most of the cases this is true; except for ToolStripItems on DropDowns. the toolstripMenuItemDesigners
+        // sets the public property in those cases.
         _activeItem = component as ToolStripItem;
-        _designerHost = (IDesignerHost)component.Site.GetService(typeof(IDesignerHost));
+        _designerHost = component.Site.GetService<IDesignerHost>();
         _designer = _designerHost.GetDesigner(component);
-        _designSurface = (DesignSurface)component.Site.GetService(typeof(DesignSurface));
+        _designSurface = component.Site.GetService<DesignSurface>();
         if (_designSurface is not null)
         {
-            _designSurface.Flushed += new EventHandler(OnLoaderFlushed);
+            _designSurface.Flushed += OnLoaderFlushed;
         }
 
         if (!s_isScalingInitialized)
         {
-            if (DpiHelper.IsScalingRequired)
-            {
-                // dimensions of the "Type Here" text box
-                TOOLSTRIP_TEMPLATE_HEIGHT = DpiHelper.LogicalToDeviceUnitsY(TOOLSTRIP_TEMPLATE_HEIGHT_ORIGINAL);
-                TEMPLATE_HEIGHT = DpiHelper.LogicalToDeviceUnitsY(TEMPLATE_HEIGHT_ORIGINAL);
-                TOOLSTRIP_TEMPLATE_WIDTH = DpiHelper.LogicalToDeviceUnitsX(TOOLSTRIP_TEMPLATE_WIDTH_ORIGINAL);
-                TEMPLATE_WIDTH = DpiHelper.LogicalToDeviceUnitsX(TEMPLATE_WIDTH_ORIGINAL);
-                // hotregion is the arrow button next to "Type Here" box
-                TEMPLATE_HOTREGION_WIDTH = DpiHelper.LogicalToDeviceUnitsX(TEMPLATE_HOTREGION_WIDTH_ORIGINAL);
-
-                MINITOOLSTRIP_DROPDOWN_BUTTON_WIDTH = DpiHelper.LogicalToDeviceUnitsX(MINITOOLSTRIP_DROPDOWN_BUTTON_WIDTH_ORIGINAL);
-                MINITOOLSTRIP_TEXTBOX_WIDTH = DpiHelper.LogicalToDeviceUnitsX(MINITOOLSTRIP_TEXTBOX_WIDTH_ORIGINAL);
-            }
+            // Dimensions of the "Type Here" text box.
+            TOOLSTRIP_TEMPLATE_HEIGHT = ScaleHelper.ScaleToInitialSystemDpi(TOOLSTRIP_TEMPLATE_HEIGHT_ORIGINAL);
+            TEMPLATE_HEIGHT = ScaleHelper.ScaleToInitialSystemDpi(TEMPLATE_HEIGHT_ORIGINAL);
+            TOOLSTRIP_TEMPLATE_WIDTH = ScaleHelper.ScaleToInitialSystemDpi(TOOLSTRIP_TEMPLATE_WIDTH_ORIGINAL);
+            TEMPLATE_WIDTH = ScaleHelper.ScaleToInitialSystemDpi(TEMPLATE_WIDTH_ORIGINAL);
+            // The hot region is the arrow button next to "Type Here" box.
+            TEMPLATE_HOTREGION_WIDTH = ScaleHelper.ScaleToInitialSystemDpi(TEMPLATE_HOTREGION_WIDTH_ORIGINAL);
+            MINITOOLSTRIP_DROPDOWN_BUTTON_WIDTH = ScaleHelper.ScaleToInitialSystemDpi(MINITOOLSTRIP_DROPDOWN_BUTTON_WIDTH_ORIGINAL);
+            MINITOOLSTRIP_TEXTBOX_WIDTH = ScaleHelper.ScaleToInitialSystemDpi(MINITOOLSTRIP_TEXTBOX_WIDTH_ORIGINAL);
 
             s_isScalingInitialized = true;
         }
 
         SetupNewEditNode(this, text, image, component);
-        _commands = Array.Empty<MenuCommand>();
-        _addCommands = Array.Empty<MenuCommand>();
+        _commands = [];
+        _addCommands = [];
     }
 
     /// <summary>
@@ -264,7 +262,7 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
     {
         get
         {
-            BaseContextMenuStrip templateNodeContextMenu = new BaseContextMenuStrip(_component.Site)
+            BaseContextMenuStrip templateNodeContextMenu = new(_component.Site)
             {
                 Populated = false
             };
@@ -272,7 +270,7 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
             templateNodeContextMenu.GroupOrdering.AddRange(new string[] { StandardGroups.Code, StandardGroups.Custom, StandardGroups.Selection, StandardGroups.Edit });
             templateNodeContextMenu.Text = "CustomContextMenu";
 
-            TemplateNodeCustomMenuItemCollection templateNodeCustomMenuItemCollection = new TemplateNodeCustomMenuItemCollection(_component.Site, _controlHost);
+            TemplateNodeCustomMenuItemCollection templateNodeCustomMenuItemCollection = new(_component.Site, _controlHost);
             foreach (ToolStripItem item in templateNodeCustomMenuItemCollection)
             {
                 templateNodeContextMenu.Groups[StandardGroups.Custom].Items.Add(item);
@@ -817,7 +815,7 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
                     Rectangle invalidateBounds = designer.GetGlyphBounds();
                     ToolStripDesignerUtils.GetAdjustedBounds(curSel, ref invalidateBounds);
                     invalidateBounds.Inflate(GLYPHBORDER, GLYPHBORDER);
-                    Region rgn = new Region(invalidateBounds);
+                    Region rgn = new(invalidateBounds);
                     invalidateBounds.Inflate(-GLYPHINSET, -GLYPHINSET);
                     rgn.Exclude(invalidateBounds);
                     BehaviorService?.Invalidate(rgn);
@@ -1276,7 +1274,7 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
             {
                 Point loc = BehaviorService.ControlToAdornerWindow(_miniToolStrip);
                 loc = BehaviorService.AdornerWindowPointToScreen(loc);
-                Rectangle translatedBounds = new Rectangle(loc, _miniToolStrip.Size);
+                Rectangle translatedBounds = new(loc, _miniToolStrip.Size);
                 _miniToolStrip.RaiseStateChangeEvent();
 
                 if (_contextMenu is null)
@@ -1383,6 +1381,7 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
         _addItemButton.DropDown = _contextMenu;
         _addItemButton.AccessibleName = SR.ToolStripDesignerTemplateNodeSplitButtonStatusStripAccessibleName;
         _addItemButton.AccessibleRole = AccessibleRole.ButtonDropDown;
+
         // Set up default item and image.
         try
         {
@@ -1390,13 +1389,11 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
             {
                 ItemTypeToolStripMenuItem firstItem = (ItemTypeToolStripMenuItem)_addItemButton.DropDownItems[0];
                 _addItemButton.ImageTransparentColor = Color.Lime;
-                Bitmap bmp = new Icon(typeof(ToolStripTemplateNode), "ToolStripTemplateNode").ToBitmap();
-                if (DpiHelper.IsScalingRequired)
-                {
-                    DpiHelper.ScaleBitmapLogicalToDevice(ref bmp);
-                }
+                _addItemButton.Image = ScaleHelper.GetIconResourceAsBitmap(
+                    typeof(ToolStripTemplateNode),
+                    "ToolStripTemplateNode",
+                    ScaleHelper.InitialSystemDpi);
 
-                _addItemButton.Image = bmp;
                 _addItemButton.DefaultItem = firstItem;
             }
 
@@ -1772,21 +1769,21 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
             {
                 case 1: // TemplateNodeSelected
                 case 4: // MouseOver
-                    using (LinearGradientBrush brush = new LinearGradientBrush(bounds, Color.White, defaultBorderColor, LinearGradientMode.Vertical))
+                    using (LinearGradientBrush brush = new(bounds, Color.White, defaultBorderColor, LinearGradientMode.Vertical))
                     {
                         g.FillRectangle(brush, bounds);
                     }
 
                     break;
                 case 5: // MouseOverHotRegion
-                    using (SolidBrush b = new SolidBrush(dropDownMouseOverColor))
+                    using (SolidBrush b = new(dropDownMouseOverColor))
                     {
                         g.FillRectangle(b, hotRegion);
                     }
 
                     break;
                 case 6: // HotRegionSelected
-                    using (SolidBrush b = new SolidBrush(dropDownMouseDownColor))
+                    using (SolidBrush b = new(dropDownMouseDownColor))
                     {
                         g.FillRectangle(b, hotRegion);
                     }
@@ -1816,9 +1813,9 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
         {
             Graphics g = e.Graphics;
-            Rectangle bounds = new Rectangle(Point.Empty, e.ToolStrip.Size);
-            Pen selectborderPen = new Pen(toolStripBorderColor);
-            Rectangle drawRect = new Rectangle(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
+            Rectangle bounds = new(Point.Empty, e.ToolStrip.Size);
+            Pen selectborderPen = new(toolStripBorderColor);
+            Rectangle drawRect = new(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
             g.DrawRectangle(selectborderPen, drawRect);
             selectborderPen.Dispose();
         }
@@ -1831,12 +1828,12 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
             base.OnRenderLabelBackground(e);
             ToolStripItem item = e.Item;
             Graphics g = e.Graphics;
-            Rectangle bounds = new Rectangle(Point.Empty, item.Size);
-            Rectangle drawRect = new Rectangle(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
-            Pen borderPen = new Pen(defaultBorderColor);
+            Rectangle bounds = new(Point.Empty, item.Size);
+            Rectangle drawRect = new(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
+            Pen borderPen = new(defaultBorderColor);
             if (state == (int)TemplateNodeSelectionState.TemplateNodeSelected) // state Template node is selected.
             {
-                using (SolidBrush brush = new SolidBrush(toolStripBorderColor))
+                using (SolidBrush brush = new(toolStripBorderColor))
                 {
                     g.FillRectangle(brush, drawRect);
                 }
@@ -1922,19 +1919,19 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
                 // Get the DropDownButton Bounds
                 Rectangle buttonBounds = splitButton.DropDownButtonBounds;
                 // Draw the White Divider Line...
-                using (Pen p = new Pen(toolStripBorderColor))
+                using (Pen p = new(toolStripBorderColor))
                 {
                     g.DrawLine(p, buttonBounds.Left, buttonBounds.Top + 1, buttonBounds.Left, buttonBounds.Bottom - 1);
                 }
 
-                Rectangle bounds = new Rectangle(Point.Empty, splitButton.Size);
+                Rectangle bounds = new(Point.Empty, splitButton.Size);
                 bool splitButtonSelected = false;
                 if (splitButton.DropDownButtonPressed)
                 {
                     // Button is pressed
                     state = 0;
-                    Rectangle fillRect = new Rectangle(buttonBounds.Left + 1, buttonBounds.Top, buttonBounds.Right, buttonBounds.Bottom);
-                    using (SolidBrush brush = new SolidBrush(dropDownMouseDownColor))
+                    Rectangle fillRect = new(buttonBounds.Left + 1, buttonBounds.Top, buttonBounds.Right, buttonBounds.Bottom);
+                    using (SolidBrush brush = new(dropDownMouseDownColor))
                     {
                         g.FillRectangle(brush, fillRect);
                     }
@@ -1943,7 +1940,7 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
                 }
                 else if (state == (int)TemplateNodeSelectionState.SplitButtonSelected)
                 {
-                    using (SolidBrush brush = new SolidBrush(dropDownMouseOverColor))
+                    using (SolidBrush brush = new(dropDownMouseOverColor))
                     {
                         g.FillRectangle(brush, splitButton.ButtonBounds);
                     }
@@ -1952,8 +1949,8 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
                 }
                 else if (state == (int)TemplateNodeSelectionState.DropDownSelected)
                 {
-                    Rectangle fillRect = new Rectangle(buttonBounds.Left + 1, buttonBounds.Top, buttonBounds.Right, buttonBounds.Bottom);
-                    using (SolidBrush brush = new SolidBrush(dropDownMouseOverColor))
+                    Rectangle fillRect = new(buttonBounds.Left + 1, buttonBounds.Top, buttonBounds.Right, buttonBounds.Bottom);
+                    using (SolidBrush brush = new(dropDownMouseOverColor))
                     {
                         g.FillRectangle(brush, fillRect);
                     }
@@ -1977,7 +1974,7 @@ internal class ToolStripTemplateNode : IMenuStatusHandler
                     selectborderPen = new Pen(defaultBorderColor);
                 }
 
-                Rectangle drawRect = new Rectangle(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
+                Rectangle drawRect = new(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
                 g.DrawRectangle(selectborderPen, drawRect);
                 selectborderPen.Dispose();
 

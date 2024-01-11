@@ -1,15 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project>
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)CodeStyle.props" />
   <Import Project="$(RepositoryEngineeringDir)FacadeAssemblies.props" />
   <Import Project="$(RepositoryEngineeringDir)ApiCompatibility\PublicApiAnalyzer.props" />
+  <Import Project="$(RepositoryEngineeringDir)Test.props" Condition="'$(IsTestProject)' == 'true'"/>
 
   <PropertyGroup>
-    <!-- Remove hardcoded .NET versions when Arcade is upgraded to .NET 9.0. https://github.com/dotnet/winforms/issues/9851-->
-    <NetMinimum>net8.0</NetMinimum>
-    <NetCurrent>net9.0</NetCurrent>
-    <NetPrevious/>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <Product>Microsoft&#xAE; .NET</Product>
     <Copyright>$(CopyrightNetFoundation)</Copyright>
@@ -23,11 +20,6 @@
     <IsAnalyzerProject Condition="!$(IsTestProject) and
                                   ($(MSBuildProjectName.EndsWith('.Analyzers')) or $(MSBuildProjectName.EndsWith('.Analyzers.CSharp')))"
                                   >true</IsAnalyzerProject>
-  </PropertyGroup>
-
-  <!-- Making all tests run sequentially until we regroup tests. Tracked under issue https://github.com/dotnet/winforms/issues/8810. -->
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
-    <XUnitCoreSettingsFile>$(RepositoryEngineeringDir)xunit.runner.json</XUnitCoreSettingsFile>
   </PropertyGroup>
 
   <!--

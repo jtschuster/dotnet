@@ -129,7 +129,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable, ISeri
 
     void ISerializable.GetObjectData(SerializationInfo si, StreamingContext context)
     {
-        using var stream = new MemoryStream();
+        using MemoryStream stream = new();
 
         Save(stream);
         si.AddValue("Data", stream.ToArray(), typeof(byte[])); // Do not rename (binary serialization)
@@ -488,7 +488,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable, ISeri
 
     private static void ThrowIfDirectoryDoesntExist(string filename)
     {
-        var directoryPart = Path.GetDirectoryName(filename);
+        string? directoryPart = Path.GetDirectoryName(filename);
         if (!string.IsNullOrEmpty(directoryPart) && !Directory.Exists(directoryPart))
         {
             throw new DirectoryNotFoundException(SR.Format(SR.TargetDirectoryDoesNotExist, directoryPart, filename));
@@ -644,7 +644,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable, ISeri
             if (count == 0)
                 return Array.Empty<int>();
 
-            var propid = new int[count];
+            int[] propid = new int[count];
             fixed (int* pPropid = propid)
             {
                 Gdip.CheckStatus(Gdip.GdipGetPropertyIdList(new HandleRef(this, _nativeImage), count, pPropid));
@@ -713,7 +713,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable, ISeri
             // "size" is total byte size:
             // sizeof(ColorPalette) + (pal->Count-1)*sizeof(ARGB)
 
-            ColorPalette palette = new ColorPalette(size);
+            ColorPalette palette = new(size);
 
             // Memory layout is:
             //    UINT Flags
@@ -841,7 +841,7 @@ public abstract class Image : MarshalByRefObject, IDisposable, ICloneable, ISeri
     {
         fixed (byte *propItemValue = propitem.Value)
         {
-            var propItemInternal = new PropertyItemInternal
+            PropertyItemInternal propItemInternal = new()
             {
                 id = propitem.Id,
                 len = propitem.Len,

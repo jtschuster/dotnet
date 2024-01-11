@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -52,7 +52,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet-format.UnitTests" />
-    <InternalsVisibleTo Include="dotnet-format.Performance" />
+    <InternalsVisibleTo Include="dotnet-format.PerformanceTests" />
   </ItemGroup>
 
   <ItemGroup>

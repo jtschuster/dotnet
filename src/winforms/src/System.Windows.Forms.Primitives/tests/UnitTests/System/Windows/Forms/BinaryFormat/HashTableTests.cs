@@ -115,14 +115,14 @@ public class HashtableTests
         BinaryFormatWriter.WritePrimitiveHashtable(stream, hashtable);
         stream.Position = 0;
 
-        using var formatterScope = new BinaryFormatterScope(enable: true);
+        using BinaryFormatterScope formatterScope = new(enable: true);
 #pragma warning disable SYSLIB0011 // Type or member is obsolete
         BinaryFormatter formatter = new();
         Hashtable deserialized = (Hashtable)formatter.Deserialize(stream);
 #pragma warning restore SYSLIB0011
 
         deserialized.Count.Should().Be(hashtable.Count);
-        foreach (var key in hashtable.Keys)
+        foreach (object? key in hashtable.Keys)
         {
             deserialized[key].Should().Be(hashtable[key]);
         }
@@ -145,7 +145,7 @@ public class HashtableTests
         format.TryGetPrimitiveHashtable(out Hashtable? deserialized).Should().BeTrue();
 
         deserialized!.Count.Should().Be(hashtable.Count);
-        foreach (var key in hashtable.Keys)
+        foreach (object? key in hashtable.Keys)
         {
             deserialized[key].Should().Be(hashtable[key]);
         }
@@ -162,7 +162,7 @@ public class HashtableTests
         BinaryFormattedObject format = new(stream);
         format.TryGetPrimitiveHashtable(out Hashtable? deserialized).Should().BeTrue();
         deserialized!.Count.Should().Be(hashtable.Count);
-        foreach (var key in hashtable.Keys)
+        foreach (object? key in hashtable.Keys)
         {
             deserialized[key].Should().Be(hashtable[key]);
         }
