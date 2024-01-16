@@ -16,7 +16,7 @@
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(_portableRidOverridden) /p:TargetRuntimeIdentifier=$(OverrideTargetRid)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PkgMicrosoft_NETCore_App_Runtime_linux-arm64=/src/dotnet/src/runtime/artifacts/sb/src/artifacts/bin/microsoft.netcore.app.runtime.linux-arm64/Release</BuildCommandArgs>
+    <!-- <BuildCommandArgs>$(BuildCommandArgs) /p:PkgMicrosoft_NETCore_App_Runtime_linux-arm64=/src/dotnet/src/runtime/artifacts/sb/src/artifacts/bin/microsoft.netcore.app.runtime.linux-arm64/Release</BuildCommandArgs> -->
 
     <!-- Update to 1.0.0 version of reference assemblies which are built in SBRP instead of the preview.2 version
          included by Arcade -->

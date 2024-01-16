@@ -57,7 +57,7 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
 
-  <Target Name="_AddEmbeddedBlazorWebJS" BeforeTargets="_CalculateEmbeddedFilesManifestInputs">
+  <Target Name="_AddEmbeddedBlazorWebJS" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" Condition="'$(BuildNodeJS)' == 'true'">
     <PropertyGroup>
       <BlazorWebJSFilename>blazor.web.js</BlazorWebJSFilename>
       <BlazorWebJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Debug\$(BlazorWebJSFilename)</BlazorWebJSFile>

@@ -98,7 +98,7 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ProtectedPrerenderComponentApplicationStore.cs" />
   </ItemGroup>
 
-  <Target Name="_AddEmbeddedBlazor" BeforeTargets="_CalculateEmbeddedFilesManifestInputs">
+  <Target Name="_AddEmbeddedBlazor" BeforeTargets="_CalculateEmbeddedFilesManifestInputs" Condition="'$(BuildNodeJS)' == 'true'">
     <PropertyGroup>
       <BlazorServerJSFilename>blazor.server.js</BlazorServerJSFilename>
       <BlazorServerJSFile Condition=" '$(Configuration)' == 'Debug' ">$(MSBuildThisFileDirectory)..\..\Web.JS\dist\Debug\$(BlazorServerJSFilename)</BlazorServerJSFile>
