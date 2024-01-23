@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Drawing.Imaging;
@@ -34,14 +34,14 @@ public sealed partial class ImageAnimator
         public ImageInfo(Image image)
         {
             _image = image;
-            _animated = ImageAnimator.CanAnimate(image);
+            _animated = CanAnimate(image);
             _frameEndTimes = null;
 
             if (_animated)
             {
                 _frameCount = image.GetFrameCount(FrameDimension.Time);
 
-                PropertyItem? frameDelayItem = image.GetPropertyItem(PropertyTagFrameDelay);
+                Imaging.PropertyItem? frameDelayItem = image.GetPropertyItem(PropertyTagFrameDelay);
 
                 // If the image does not have a frame delay, we just return 0.
                 if (frameDelayItem is not null)
@@ -68,7 +68,7 @@ public sealed partial class ImageAnimator
                         // Frame delays are stored in 1/100ths of a second; convert to milliseconds while accumulating
                         // Per spec, a frame delay can be 0 which is treated as a single animation tick
                         int delay = BitConverter.ToInt32(values, i) * 10;
-                        lastEndTime += delay > 0 ? delay : ImageAnimator.AnimationDelayMS;
+                        lastEndTime += delay > 0 ? delay : AnimationDelayMS;
 
                         // Guard against overflows
                         if (lastEndTime < _totalAnimationTime)
@@ -84,7 +84,7 @@ public sealed partial class ImageAnimator
                     }
                 }
 
-                PropertyItem? loopCountItem = image.GetPropertyItem(PropertyTagLoopCount);
+                Imaging.PropertyItem? loopCountItem = image.GetPropertyItem(PropertyTagLoopCount);
 
                 if (loopCountItem is not null)
                 {
@@ -143,7 +143,7 @@ public sealed partial class ImageAnimator
         /// Advance the animation by the specified number of milliseconds. If the advancement
         /// progresses beyond the end time of the current Frame, <see cref="FrameChangedHandler"/>
         /// will be called. Subscribed handlers often use that event to call
-        /// <see cref="ImageAnimator.UpdateFrames(Image)"/>.
+        /// <see cref="UpdateFrames(Image)"/>.
         /// <para>
         /// If the animation progresses beyond the end of the image's total animation time,
         /// the animation will loop.

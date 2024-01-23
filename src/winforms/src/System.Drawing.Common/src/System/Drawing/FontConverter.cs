@@ -91,7 +91,7 @@ public class FontConverter : TypeConverter
                 {
                     argCount = 6;
                 }
-                else if (font.GdiCharSet != SafeNativeMethods.DEFAULT_CHARSET)
+                else if (font.GdiCharSet != (byte)FONT_CHARSET.DEFAULT_CHARSET)
                 {
                     argCount = 5;
                 }
@@ -450,7 +450,7 @@ public class FontConverter : TypeConverter
 
             Array.Sort(values, Comparer.Default);
 
-            return new TypeConverter.StandardValuesCollection(values);
+            return new StandardValuesCollection(values);
         }
 
         // We allow other values other than those in the font list.

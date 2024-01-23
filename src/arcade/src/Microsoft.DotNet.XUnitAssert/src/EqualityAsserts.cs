@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Xunit.Internal;
 using Xunit.Sdk;
 
 #if XUNIT_NULLABLE
@@ -196,7 +197,15 @@ namespace Xunit
 					{
 						try
 						{
-							if (CollectionTracker.AreCollectionsEqual(expectedTracker, actualTracker, itemComparer, itemComparer == AssertEqualityComparer<T>.DefaultInnerComparer, out mismatchedIndex))
+							bool result;
+
+							// Call AssertEqualityComparer.Equals because it checks for IEquatable<> before using CollectionTracker
+							if (aec != null)
+								result = aec.Equals(expected, expectedTracker, actual, actualTracker, out mismatchedIndex);
+							else
+								result = CollectionTracker.AreCollectionsEqual(expectedTracker, actualTracker, itemComparer, itemComparer == AssertEqualityComparer<T>.DefaultInnerComparer, out mismatchedIndex);
+
+							if (result)
 								return;
 						}
 						catch (Exception ex)
@@ -259,8 +268,8 @@ namespace Xunit
 
 					if (expectedType != actualType)
 					{
-						var expectedTypeName = expectedType == null ? "" : ArgumentFormatter.FormatTypeName(expectedType) + " ";
-						var actualTypeName = actualType == null ? "" : ArgumentFormatter.FormatTypeName(actualType) + " ";
+						var expectedTypeName = expectedType == null ? "" : (AssertHelper.IsCompilerGenerated(expectedType) ? "<generated> " : ArgumentFormatter.FormatTypeName(expectedType) + " ");
+						var actualTypeName = actualType == null ? "" : (AssertHelper.IsCompilerGenerated(actualType) ? "<generated> " : ArgumentFormatter.FormatTypeName(actualType) + " ");
 
 						var typeNameIndent = Math.Max(expectedTypeName.Length, actualTypeName.Length);
 
@@ -709,7 +718,15 @@ namespace Xunit
 					{
 						try
 						{
-							if (!CollectionTracker.AreCollectionsEqual(expectedTracker, actualTracker, itemComparer, itemComparer == AssertEqualityComparer<T>.DefaultInnerComparer, out mismatchedIndex))
+							bool result;
+
+							// Call AssertEqualityComparer.Equals because it checks for IEquatable<> before using CollectionTracker
+							if (aec != null)
+								result = aec.Equals(expected, expectedTracker, actual, actualTracker, out mismatchedIndex);
+							else
+								result = CollectionTracker.AreCollectionsEqual(expectedTracker, actualTracker, itemComparer, itemComparer == AssertEqualityComparer<T>.DefaultInnerComparer, out mismatchedIndex);
+
+							if (!result)
 								return;
 
 							// For NotEqual that doesn't throw, pointers are irrelevant, because
@@ -765,8 +782,8 @@ namespace Xunit
 
 					if (expectedType != actualType)
 					{
-						var expectedTypeName = expectedType == null ? "" : ArgumentFormatter.FormatTypeName(expectedType) + " ";
-						var actualTypeName = actualType == null ? "" : ArgumentFormatter.FormatTypeName(actualType) + " ";
+						var expectedTypeName = expectedType == null ? "" : (AssertHelper.IsCompilerGenerated(expectedType) ? "<generated> " : ArgumentFormatter.FormatTypeName(expectedType) + " ");
+						var actualTypeName = actualType == null ? "" : (AssertHelper.IsCompilerGenerated(actualType) ? "<generated> " : ArgumentFormatter.FormatTypeName(actualType) + " ");
 
 						var typeNameIndent = Math.Max(expectedTypeName.Length, actualTypeName.Length);
 

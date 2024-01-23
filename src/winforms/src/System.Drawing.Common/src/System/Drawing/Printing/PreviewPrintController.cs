@@ -66,8 +66,8 @@ public class PreviewPrintController : PrintController
         Metafile metafile = new(
             hdc,
             new Rectangle(0, 0, metafileSize.Width, metafileSize.Height),
-            MetafileFrameUnit.GdiCompatible,
-            EmfType.EmfPlusOnly);
+            Imaging.MetafileFrameUnit.GdiCompatible,
+            Imaging.EmfType.EmfPlusOnly);
 
         PreviewPageInfo info = new(metafile, size);
         _list.Add(info);
@@ -93,7 +93,7 @@ public class PreviewPrintController : PrintController
 
         if (UseAntiAlias)
         {
-            _graphics.TextRenderingHint = Text.TextRenderingHint.AntiAlias;
+            _graphics.TextRenderingHint = TextRenderingHint.AntiAlias;
             _graphics.SmoothingMode = Drawing2D.SmoothingMode.AntiAlias;
         }
 

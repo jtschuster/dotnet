@@ -32,12 +32,7 @@ namespace Xunit
 		/// <param name="collection">The collection</param>
 		/// <param name="action">The action to test each item against</param>
 		/// <exception cref="AllException">Thrown when the collection contains at least one non-matching element</exception>
-		public static void All<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces |
-	DynamicallyAccessedMemberTypes.PublicFields |
-	DynamicallyAccessedMemberTypes.NonPublicFields |
-	DynamicallyAccessedMemberTypes.PublicProperties |
-	DynamicallyAccessedMemberTypes.NonPublicProperties |
-	DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+		public static void All<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)] T>(
 			IEnumerable<T> collection,
 			Action<T> action)
 		{
@@ -55,12 +50,7 @@ namespace Xunit
 		/// <param name="collection">The collection</param>
 		/// <param name="action">The action to test each item against</param>
 		/// <exception cref="AllException">Thrown when the collection contains at least one non-matching element</exception>
-		public static void All<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces |
-	DynamicallyAccessedMemberTypes.PublicFields |
-	DynamicallyAccessedMemberTypes.NonPublicFields |
-	DynamicallyAccessedMemberTypes.PublicProperties |
-	DynamicallyAccessedMemberTypes.NonPublicProperties |
-	DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+		public static void All<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)] T>(
 			IEnumerable<T> collection,
 			Action<T, int> action)
 		{
@@ -231,12 +221,7 @@ namespace Xunit
 		/// <param name="expected">The object expected to be in the collection</param>
 		/// <param name="collection">The collection to be inspected</param>
 		/// <exception cref="ContainsException">Thrown when the object is not present in the collection</exception>
-		public static void Contains<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces |
-	DynamicallyAccessedMemberTypes.PublicFields |
-	DynamicallyAccessedMemberTypes.NonPublicFields |
-	DynamicallyAccessedMemberTypes.PublicProperties |
-	DynamicallyAccessedMemberTypes.NonPublicProperties |
-	DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+		public static void Contains<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)] T>(
 			T expected,
 			IEnumerable<T> collection)
 		{
@@ -336,12 +321,7 @@ namespace Xunit
 		/// <param name="expected">The object that is expected not to be in the collection</param>
 		/// <param name="collection">The collection to be inspected</param>
 		/// <exception cref="DoesNotContainException">Thrown when the object is present inside the container</exception>
-		public static void DoesNotContain<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces |
-	DynamicallyAccessedMemberTypes.PublicFields |
-	DynamicallyAccessedMemberTypes.NonPublicFields |
-	DynamicallyAccessedMemberTypes.PublicProperties |
-	DynamicallyAccessedMemberTypes.NonPublicProperties |
-	DynamicallyAccessedMemberTypes.PublicMethods)] T>(
+		public static void DoesNotContain<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.NonPublicFields | DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.NonPublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)] T>(
 			T expected,
 			IEnumerable<T> collection)
 		{
