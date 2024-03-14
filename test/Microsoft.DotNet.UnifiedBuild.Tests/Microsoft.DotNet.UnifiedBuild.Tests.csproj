@@ -23,8 +23,8 @@
     <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SkippableFactAttribute.cs" />
     <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SkippableTheoryAttribute.cs" />
 
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotnetHelper.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotnetTemplate.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotNetHelper.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotNetTemplate.cs" />
     <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\Utilities.cs" />
     <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\BaselineHelper.cs" />
     <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\ExecuteHelper.cs" />
