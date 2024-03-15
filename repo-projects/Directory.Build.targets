@@ -61,6 +61,9 @@
 
     <!-- Exclude repositories that currently don't build when not building source-only. -->
     <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <TransitiveRepositoryReference Remove="razor" />
+      <TransitiveRepositoryReference Remove="roslyn-analyzers" />
+      <TransitiveRepositoryReference Remove="wpf" />
       <TransitiveRepositoryReference Remove="roslyn" />
       <TransitiveRepositoryReference Remove="aspnetcore" />
       <TransitiveRepositoryReference Remove="nuget-client" />
@@ -114,7 +117,7 @@
       <!-- Dev innerloop opt-in feed: /p:ExtraRestoreSourcePath=... -->
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
     </PropertyGroup>
-  
+
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
       <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
       <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
@@ -125,7 +128,7 @@
       <_CommonBuildSources Include="@(DependentRepoSourceName)" />
       <_CommonBuildSources Include="$(ExtraSourcesNuGetSourceName)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
     </ItemGroup>
-    
+
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <!-- When not building source-only, repositories lagging behind on the .NET SDK (e.g. tooling repos)
           that need to utilize a VS-aligned version for development purposes may not have the latest product

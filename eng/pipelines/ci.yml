@@ -1,4 +1,4 @@
-# This yml is used by these pipelines and triggers: 
+# This yml is used by these pipelines and triggers:
 # NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
 #
 # - dotnet-source-build (public)

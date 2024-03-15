@@ -1,16 +1,11 @@
 {
   "sdk": {
-    "version": "9.0.100-alpha.1.23615.4",
+    "version": "9.0.100-preview.2.24103.2",
     "allowPrerelease": true,
     "rollForward": "major"
   },
   "tools": {
-    "dotnet": "9.0.100-alpha.1.23615.4",
-    "runtimes": {
-      "dotnet": [
-        "8.0.0"
-      ]
-    }
+    "dotnet": "9.0.100-preview.2.24103.2"
   },
   "native-tools": {
     "cmake": "3.14.5",

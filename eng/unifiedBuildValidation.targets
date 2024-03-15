@@ -26,9 +26,9 @@
       <Error Text="Multiple valid dotnet-sdk archives found."
              Condition="'@(_BuiltSdkArchivePath->Count())' != '1'" />
 
-      <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)">
+      <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)" Condition="'$(BaselineMsftArchivePath)' == ''">
         <Output TaskParameter="ClosestOfficialArchivePath"
-                PropertyName="_ClosestOfficialSdkPath" />
+                PropertyName="BaselineMsftArchivePath" />
       </GetClosestOfficialSdk>
 
       <PropertyGroup>
@@ -40,7 +40,7 @@
           IgnoreStandardErrorWarningFormat="true"
           EnvironmentVariables="
             UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(_BuiltSdkArchivePath);
-            UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH=$(_ClosestOfficialSdkPath);
+            UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH=$(BaselineMsftArchivePath);
             UNIFIED_BUILD_VALIDATION_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath);
             UNIFIED_BUILD_VALIDATION_TARGET_RID=$(TargetRid);
             UNIFIED_BUILD_VALIDATION_PORTABLE_RID=$(PortableRid);
