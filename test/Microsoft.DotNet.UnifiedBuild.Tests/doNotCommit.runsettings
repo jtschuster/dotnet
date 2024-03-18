@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+    <RunConfiguration>
+        <EnvironmentVariables>
+            <UNIFIED_BUILD_VALIDATION_PORTABLE_RID>true</UNIFIED_BUILD_VALIDATION_PORTABLE_RID>
+            <UNIFIED_BUILD_VALIDATION_DOTNET_DIR>D:\dn\.dotnet</UNIFIED_BUILD_VALIDATION_DOTNET_DIR>
+            <UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH>C:\Users\jschuster\Downloads\dotnet-sdk-9.0.100-preview.3.24165.20-win-x64.zip</UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH>
+            <UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH>D:\dn\artifacts\assets\Release\dotnet-sdk-9.0.100-preview.3.24164.1-win-x64.zip</UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH>
+            <UNIFIED_BUILD_VALIDATION_TARGET_RID>win-x64</UNIFIED_BUILD_VALIDATION_TARGET_RID>
+			<UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS>true</UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS>
+        </EnvironmentVariables>
+    </RunConfiguration>
+</RunSettings>

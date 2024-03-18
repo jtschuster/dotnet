@@ -111,10 +111,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
                 // - The version may have one or more release identifiers that begin with '.' or '-'
                 // - The version should end before a path separator, '.', '-', or '/'
             Regex semanticVersionRegex = new(
-                @"(?<=[./\\-])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+"
+                @"(?<=[./\\-_])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+"
                 + @"(((?:[-.]((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)))+"
                 + @"(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
-                + @"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?=[/\\.-])");
+                + @"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?=[/\\.-_])");
             return semanticVersionRegex.Replace(result, SemanticVersionPlaceholder);
         }
 

@@ -50,6 +50,27 @@ public static class Utilities
             .ToList();
     }
 
+    public static IEnumerable<string> TryParseExclusionsFile(string exclusionsFileName, string? prefix = null)
+    {
+        string exclusionsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), exclusionsFileName);
+        int prefixSkip = prefix?.Length + 1 ?? 0;
+        if (!File.Exists(exclusionsFilePath))
+        {
+            return [];
+        }
+        return File.ReadAllLines(exclusionsFilePath)
+            // process only specific exclusions if a prefix is provided
+            .Where(line => prefix is null || line.StartsWith(prefix + ","))
+            .Select(line =>
+            {
+                // Ignore comments
+                var index = line.IndexOf('#');
+                return index >= 0 ? line[prefixSkip..index].TrimEnd() : line[prefixSkip..];
+            })
+            .Where(line => !string.IsNullOrEmpty(line))
+            .ToList();
+    }
+
     public static void ExtractTarball(string tarballPath, string outputDir, ITestOutputHelper outputHelper)
     {
         // TarFile doesn't properly handle hard links (https://github.com/dotnet/runtime/pull/85378#discussion_r1221817490),

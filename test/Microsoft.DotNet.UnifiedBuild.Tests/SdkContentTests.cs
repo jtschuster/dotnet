@@ -39,11 +39,11 @@ public class SdkContentTests : SdkTests
         const string msftFileListingFileName = "msftSdkFiles.txt";
         const string sbFileListingFileName = "sbSdkFiles.txt";
         WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName, isPortable: true, MsftSdkType);
-        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: false, SourceBuildSdkType);
+        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: true, SourceBuildSdkType);
 
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
         diff = RemoveDiffMarkers(diff);
-        BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
+        BaselineHelper.CompareBaselineContents(new Exclusions().GetBaselineFileDiffFileName(), diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
 
     [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
@@ -148,7 +148,7 @@ public class SdkContentTests : SdkTests
 
     private Dictionary<string, Version?> GetSdkAssemblyVersions(string sbSdkPath)
     {
-        var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+        Exclusions ex = new Exclusions();
         IEnumerable<string> exclusionFilters = GetSdkDiffExclusionFilters(SourceBuildSdkType)
             .Concat(GetKnownNativeFiles())
             .Select(filter => filter.TrimStart("./".ToCharArray()));
@@ -161,10 +161,6 @@ public class SdkContentTests : SdkTests
             {
                 foreach (string file in Directory.EnumerateFiles(dir, "*", SearchOption.TopDirectoryOnly))
                 {
-                    if (matcher.Match(file).HasMatches)
-                    {
-                        continue;
-                    }
                     string fileExt = Path.GetExtension(file);
                     if (fileExt.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
                         fileExt.Equals(".exe", StringComparison.OrdinalIgnoreCase))
