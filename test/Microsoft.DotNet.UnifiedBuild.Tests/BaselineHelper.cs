@@ -44,6 +44,8 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         public static void CompareBaselineContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false, string baselineSubDir = "")
         {
             string actualFilePath = Path.Combine(TestBase.LogsDirectory, $"Updated{baselineFileName}");
+            if (!actualContents.EndsWith(Environment.NewLine))
+                actualContents += Environment.NewLine;
             File.WriteAllText(actualFilePath, actualContents);
 
             CompareFiles(GetBaselineFilePath(baselineFileName, baselineSubDir), actualFilePath, outputHelper, warnOnDiffs);
@@ -73,7 +75,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
             if (!warnOnDiffs)
             {
-                Assert.Null(message);
+                if (message is not null)
+                {
+                    Assert.Fail(message);
+                }
             }
         }
 
@@ -90,8 +95,8 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         public static string GetBaselineFilePath(string baselineFileName, string baselineSubDir = "") =>
             Path.Combine(GetAssetsDirectory(), "baselines", baselineSubDir, baselineFileName);
 
-        public static string RemoveRids(string diff, bool isPortable = false) =>
-            isPortable ? diff.Replace(Config.PortableRid, "portable-rid") : diff.Replace(Config.TargetRid, "banana-rid");
+        public static string RemoveRids(string diff, string portableRid, string targetRid, bool isPortable = false) =>
+            isPortable ? diff.Replace(portableRid, "portable-rid") : diff.Replace(targetRid, "banana-rid");
 
         public static string RemoveVersions(string source)
         {
@@ -100,16 +105,16 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
             string result = Regex.Replace(source, $@"{pathSeparator}(net|roslyn)[1-9]+\.[0-9]+{pathSeparator}", match =>
             {
                 string wordPart = match.Groups[1].Value;
-                return $"{Path.DirectorySeparatorChar}{wordPart}{NonSemanticVersionPlaceholder}{Path.DirectorySeparatorChar}";
+                return $"{'/'}{wordPart}{NonSemanticVersionPlaceholder}{'/'}";
             });
-        
+
             // Remove semantic versions
             // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
             // The regex from https://semver.org has been modified to account for the following:
-                // - The version should be preceded by a path separator, '.', '-', or '/'
-                // - The version should match a release identifier that begins with '.' or '-'
-                // - The version may have one or more release identifiers that begin with '.' or '-'
-                // - The version should end before a path separator, '.', '-', or '/'
+            // - The version should be preceded by a path separator, '.', '-', or '/'
+            // - The version should match a release identifier that begins with '.' or '-'
+            // - The version may have one or more release identifiers that begin with '.' or '-'
+            // - The version should end before a path separator, '.', '-', or '/'
             Regex semanticVersionRegex = new(
                 @"(?<=[./\\-_])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+"
                 + @"(((?:[-.]((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)))+"

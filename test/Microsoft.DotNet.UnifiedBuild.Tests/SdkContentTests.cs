@@ -19,65 +19,66 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 [Trait("Category", "SdkContent")]
-public class SdkContentTests : SdkTests
+public class SdkContentTests : TestBase
 {
-    private const string MsftSdkType = "msft";
-    private const string SourceBuildSdkType = "sb";
-
-    public SdkContentTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
+    Exclusions Exclusions;
+    public SdkContentTests(ITestOutputHelper outputHelper, Config config) : base(outputHelper, config)
+    { 
+        Exclusions = new(Config.TargetRid);
+    }
 
     /// <Summary>
     /// Verifies the file layout of the source built sdk tarball to the Microsoft build.
-    /// The differences are captured in baselines/MsftToSbSdkDiff.txt.
+    /// The differences are captured in baselines/MsftToUbSdkDiff.txt.
     /// Version numbers that appear in paths are compared but are stripped from the baseline.
     /// This makes the baseline durable between releases.  This does mean however, entries
     /// in the baseline may appear identical if the diff is version specific.
     /// </Summary>
-    [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
-    public void CompareMsftToSbFileList()
+    [Fact]
+    public void CompareMsftToUbFileList()
     {
         const string msftFileListingFileName = "msftSdkFiles.txt";
-        const string sbFileListingFileName = "sbSdkFiles.txt";
-        WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName, isPortable: true, MsftSdkType);
-        WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: true, SourceBuildSdkType);
+        const string ubFileListingFileName = "ubSdkFiles.txt";
+        WriteTarballFileList(Config.MsftSdkArchivePath, msftFileListingFileName, isPortable: true, Exclusions.MsftPrefix);
+        WriteTarballFileList(Config.UbSdkArchivePath, ubFileListingFileName, isPortable: true, Exclusions.UbPrefix);
 
-        string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
+        string diff = BaselineHelper.DiffFiles(msftFileListingFileName, ubFileListingFileName, OutputHelper);
         diff = RemoveDiffMarkers(diff);
-        BaselineHelper.CompareBaselineContents(new Exclusions().GetBaselineFileDiffFileName(), diff, OutputHelper, Config.WarnOnSdkContentDiffs);
+        BaselineHelper.CompareBaselineContents(Exclusions.GetBaselineFileDiffFileName(), diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
 
-    [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
-    public void CompareMsftToSbAssemblyVersions()
+    [Fact]
+    public async Task CompareMsftToUbAssemblyVersions()
     {
-        Assert.NotNull(Config.MsftSdkTarballPath);
-        Assert.NotNull(Config.SdkTarballPath);
+        Assert.NotNull(Config.MsftSdkArchivePath);
+        Assert.NotNull(Config.UbSdkArchivePath);
 
         DirectoryInfo tempDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
         try
         {
-            DirectoryInfo sbSdkDir = Directory.CreateDirectory(Path.Combine(tempDir.FullName, SourceBuildSdkType));
-            Utilities.ExtractTarball(Config.SdkTarballPath, sbSdkDir.FullName, OutputHelper);
+            DirectoryInfo ubSdkDir = Directory.CreateDirectory(Path.Combine(tempDir.FullName, Exclusions.UbPrefix));
+            Utilities.ExtractTarball(Config.UbSdkArchivePath, ubSdkDir.FullName, OutputHelper);
 
-            DirectoryInfo msftSdkDir = Directory.CreateDirectory(Path.Combine(tempDir.FullName, MsftSdkType));
-            Utilities.ExtractTarball(Config.MsftSdkTarballPath, msftSdkDir.FullName, OutputHelper);
+            DirectoryInfo msftSdkDir = Directory.CreateDirectory(Path.Combine(tempDir.FullName, Exclusions.MsftPrefix));
+            Utilities.ExtractTarball(Config.MsftSdkArchivePath, msftSdkDir.FullName, OutputHelper);
 
-            var t1 = Task.Run(() => GetSdkAssemblyVersions(sbSdkDir.FullName));
+            var t1 = Task.Run(() => GetSdkAssemblyVersions(ubSdkDir.FullName));
             var t2 = Task.Run(() => GetSdkAssemblyVersions(msftSdkDir.FullName));
-            Task.WaitAll(t1, t2);
-            Dictionary<string, Version?> sbSdkAssemblyVersions = t1.Result;
-            Dictionary<string, Version?> msftSdkAssemblyVersions = t2.Result;
+            var results = await Task.WhenAll(t1, t2);
+            Dictionary<string, Version?> ubSdkAssemblyVersions = results[0];
+            Dictionary<string, Version?> msftSdkAssemblyVersions = results[1];
 
-            RemoveExcludedAssemblyVersionPaths(sbSdkAssemblyVersions, msftSdkAssemblyVersions);
+            RemoveExcludedAssemblyVersionPaths(ubSdkAssemblyVersions, msftSdkAssemblyVersions);
 
-            const string SbVersionsFileName = "sb_assemblyversions.txt";
-            WriteAssemblyVersionsToFile(sbSdkAssemblyVersions, SbVersionsFileName);
+            const string UbVersionsFileName = "ub_assemblyversions.txt";
+            WriteAssemblyVersionsToFile(ubSdkAssemblyVersions, UbVersionsFileName);
 
             const string MsftVersionsFileName = "msft_assemblyversions.txt";
             WriteAssemblyVersionsToFile(msftSdkAssemblyVersions, MsftVersionsFileName);
 
-            string diff = BaselineHelper.DiffFiles(MsftVersionsFileName, SbVersionsFileName, OutputHelper);
+            string diff = BaselineHelper.DiffFiles(MsftVersionsFileName, UbVersionsFileName, OutputHelper);
             diff = RemoveDiffMarkers(diff);
-            BaselineHelper.CompareBaselineContents("MsftToSbSdkAssemblyVersions.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
+            BaselineHelper.CompareBaselineContents($"MsftToUbSdkAssemblyVersions-{Config.TargetRid}.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
         }
         finally
         {
@@ -85,27 +86,40 @@ public class SdkContentTests : SdkTests
         }
     }
 
-    private static void RemoveExcludedAssemblyVersionPaths(Dictionary<string, Version?> sbSdkAssemblyVersions, Dictionary<string, Version?> msftSdkAssemblyVersions)
+    private void RemoveExcludedAssemblyVersionPaths(Dictionary<string, Version?> ubSdkAssemblyVersions, Dictionary<string, Version?> msftSdkAssemblyVersions)
     {
-        IEnumerable<string> assemblyVersionDiffFilters = GetSdkAssemblyVersionDiffExclusionFilters()
+        IEnumerable<string> assemblyVersionDiffFilters = Exclusions.GetAssemblyVersionExclusions()
             .Select(filter => filter.TrimStart("./".ToCharArray()));
+        // Remove entries that are not in both. If they should be in both, the mismatch will be caught in another test
+        foreach (var kvp in ubSdkAssemblyVersions)
+        {
+            if (!msftSdkAssemblyVersions.ContainsKey(kvp.Key))
+            {
+                ubSdkAssemblyVersions.Remove(kvp.Key);
+            }
+        }
 
-        // Remove any excluded files as long as SB SDK's file has the same or greater assembly version compared to the corresponding
+        foreach (var kvp in msftSdkAssemblyVersions)
+        {
+            if (!ubSdkAssemblyVersions.ContainsKey(kvp.Key))
+            {
+                msftSdkAssemblyVersions.Remove(kvp.Key);
+            }
+        }
+
+        // Remove any excluded files as long as UB SDK's file has the same or greater assembly version compared to the corresponding
         // file in the MSFT SDK. If the version is less, the file will show up in the results as this is not a scenario
         // that is valid for shipping.
-        string[] sbSdkFileArray = sbSdkAssemblyVersions.Keys.ToArray();
-        for (int i = sbSdkFileArray.Length - 1; i >= 0; i--)
+        string[] ubSdkFileArray = ubSdkAssemblyVersions.Keys.ToArray();
+        for (int i = ubSdkFileArray.Length - 1; i >= 0; i--)
         {
-            string assemblyPath = sbSdkFileArray[i];
-            Version? sbVersion = sbSdkAssemblyVersions[assemblyPath];
-            Version? msftVersion = msftSdkAssemblyVersions[assemblyPath];
-
-            if (sbVersion is not null &&
-                msftVersion is not null &&
-                sbVersion >= msftVersion &&
+            string assemblyPath = ubSdkFileArray[i];
+            if (ubSdkAssemblyVersions.TryGetValue(assemblyPath, out Version? ubVersion) &&
+                msftSdkAssemblyVersions.TryGetValue(assemblyPath, out Version? msftVersion) &&
+                ubVersion >= msftVersion &&
                 Utilities.IsFileExcluded(assemblyPath, assemblyVersionDiffFilters))
             {
-                sbSdkAssemblyVersions.Remove(assemblyPath);
+                ubSdkAssemblyVersions.Remove(assemblyPath);
                 msftSdkAssemblyVersions.Remove(assemblyPath);
             }
         }
@@ -132,30 +146,16 @@ public class SdkContentTests : SdkTests
         return null;
     }
 
-    private string FindMatchingFilePath(string rootDir, Matcher matcher, string representativeFile)
+    private Dictionary<string, Version?> GetSdkAssemblyVersions(string ubSdkPath, string? prefix = null)
     {
-        foreach (string file in Directory.EnumerateFiles(rootDir, "*", SearchOption.AllDirectories))
-        {
-            if (matcher.Match(rootDir, file).HasMatches)
-            {
-                return file;
-            }
-        }
-
-        Assert.Fail($"Unable to find matching file for '{representativeFile}' in '{rootDir}'.");
-        return string.Empty;
-    }
-
-    private Dictionary<string, Version?> GetSdkAssemblyVersions(string sbSdkPath)
-    {
-        Exclusions ex = new Exclusions();
-        IEnumerable<string> exclusionFilters = GetSdkDiffExclusionFilters(SourceBuildSdkType)
-            .Concat(GetKnownNativeFiles())
+        Exclusions ex = Exclusions;
+        IEnumerable<string> exclusionFilters = ex.GetFileExclusions(prefix)
+            .Concat(ex.GetNativeDllExclusions(prefix))
+            .Concat(ex.GetAssemblyVersionExclusions(prefix))
             .Select(filter => filter.TrimStart("./".ToCharArray()));
-        List<string> knownNativeFiles = Utilities.ParseExclusionsFile("NativeDlls-win-any.txt").ToList();
-        ConcurrentDictionary<string, Version?> sbSdkAssemblyVersions = new();
+        ConcurrentDictionary<string, Version?> ubSdkAssemblyVersions = new();
         List<Task> tasks = new List<Task>();
-        foreach (string dir in Directory.EnumerateDirectories(sbSdkPath, "*", SearchOption.AllDirectories).Append(sbSdkPath))
+        foreach (string dir in Directory.EnumerateDirectories(ubSdkPath, "*", SearchOption.AllDirectories).Append(ubSdkPath))
         {
             var t = Task.Run(() =>
             {
@@ -165,14 +165,14 @@ public class SdkContentTests : SdkTests
                     if (fileExt.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
                         fileExt.Equals(".exe", StringComparison.OrdinalIgnoreCase))
                     {
-                        string relativePath = Path.GetRelativePath(sbSdkPath, file);
+                        string relativePath = Path.GetRelativePath(ubSdkPath, file);
                         string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
-                        if (!Utilities.IsFileExcluded(normalizedPath, exclusionFilters))
+                        if (!ex.IsFileExcluded(normalizedPath, exclusionFilters))
                         {
                             try
                             {
                                 AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
-                                Assert.True(sbSdkAssemblyVersions.TryAdd(normalizedPath, GetVersion(assemblyName)));
+                                Assert.True(ubSdkAssemblyVersions.TryAdd(normalizedPath, GetVersion(assemblyName)));
                             }
                             catch (BadImageFormatException)
                             {
@@ -184,34 +184,8 @@ public class SdkContentTests : SdkTests
             });
             tasks.Add(t);
         }
-        //foreach (string file in Directory.EnumerateFiles(sbSdkPath, "*", SearchOption.AllDirectories))
-        //{
-        //    string fileExt = Path.GetExtension(file);
-        //    if (fileExt.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
-        //        fileExt.Equals(".exe", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        string relativePath = Path.GetRelativePath(sbSdkPath, file);
-        //        string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
-        //        if (!Utilities.IsFileExcluded(normalizedPath, exclusionFilters))
-        //        {
-        //            var t = Task.Run(() =>
-        //            {
-        //                try
-        //                {
-        //                    AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
-        //                    sbSdkAssemblyVersions.Add(normalizedPath, GetVersion(assemblyName));
-        //                }
-        //                catch (BadImageFormatException)
-        //                {
-        //                    Console.WriteLine($"BadImageFormatException: {file}");
-        //                }
-        //            });
-        //            tasks.Add(t);
-        //        }
-        //    }
-        //}
         Task.WaitAll(tasks.ToArray());
-        return sbSdkAssemblyVersions.ToDictionary();
+        return ubSdkAssemblyVersions.ToDictionary();
     }
 
     private void WriteTarballFileList(string? tarballPath, string outputFileName, bool isPortable, string sdkType)
@@ -222,25 +196,13 @@ public class SdkContentTests : SdkTests
         }
 
         string fileListing = Utilities.GetTarballContentNames(tarballPath).Aggregate((a, b) => $"{a}{Environment.NewLine}{b}");
-        fileListing = BaselineHelper.RemoveRids(fileListing, isPortable);
+        fileListing = BaselineHelper.RemoveRids(fileListing, Config.PortableRidEnv, Config.TargetRid, isPortable);
         fileListing = BaselineHelper.RemoveVersions(fileListing);
         IEnumerable<string> files = fileListing.Split(Environment.NewLine).OrderBy(path => path);
-        files = RemoveExclusions(files, GetSdkDiffExclusionFilters(sdkType));
+        files = Exclusions.RemoveContentDiffFileExclusions(files, sdkType);
 
         File.WriteAllLines(outputFileName, files);
     }
-
-    private static IEnumerable<string> RemoveExclusions(IEnumerable<string> files, IEnumerable<string> exclusions) =>
-        files.Where(item => !Utilities.IsFileExcluded(item, exclusions));
-
-    private static IEnumerable<string> GetSdkDiffExclusionFilters(string sdkType) =>
-        Utilities.ParseExclusionsFile("SdkFileDiffExclusions.txt", sdkType);
-
-    private static IEnumerable<string> GetSdkAssemblyVersionDiffExclusionFilters() =>
-        Utilities.ParseExclusionsFile("SdkAssemblyVersionDiffExclusions.txt");
-
-    private static IEnumerable<string> GetKnownNativeFiles() =>
-        Utilities.ParseExclusionsFile("NativeDlls-win-any.txt");
 
     private static string RemoveDiffMarkers(string source)
     {
@@ -248,6 +210,6 @@ public class SdkContentTests : SdkTests
         string result = indexRegex.Replace(source, "index ------------");
 
         Regex diffSegmentRegex = new("^@@ .* @@", RegexOptions.Multiline);
-        return diffSegmentRegex.Replace(result, "@@ ------------ @@");
+        return diffSegmentRegex.Replace(result, "@@ ------------ @@").ReplaceLineEndings();
     }
 }
