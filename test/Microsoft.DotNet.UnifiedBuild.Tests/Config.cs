@@ -12,7 +12,6 @@ using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
-
 public class Config : IDisposable
 {
     IMessageSink _sink;

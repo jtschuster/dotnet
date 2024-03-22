@@ -19,11 +19,11 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 [Trait("Category", "SdkContent")]
-public class SdkContentTests : TestBase, IClassFixture<Config>
+public class SdkContentTests : TestBase
 {
     Exclusions Exclusions;
     public SdkContentTests(ITestOutputHelper outputHelper, Config config) : base(outputHelper, config)
-    {
+    { 
         Exclusions = new(Config.TargetRid);
     }
 

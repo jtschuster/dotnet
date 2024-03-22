@@ -18,19 +18,17 @@
 
     <PropertyGroup>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
-      <!-- <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'RunConfiguration.EnvironmentVariables.%(Identity)=%(Value)')</EnvironmentVariableRunSettings> -->
       <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'%(Identity)=%(Value)')</EnvironmentVariableRunSettings>
       <runSettings>RunConfiguration.EnvironmentVariables.UNIFIED_BUILD_VALIDATION_ARGS=$([MSBuild]::Escape($(EnvironmentVariableRunSettings)))</runSettings>
     </PropertyGroup>
 
     <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="VSTest"
-             Properties="VsTestUseMSBuildOutput=true--
-                         IsTestProject=true--
+             Properties="VsTestUseMSBuildOutput=true;
+                         IsTestProject=true;
                          Configuration=$(Configuration);
                          VSTestLogger=trx;
-                         VSTestCLIRunSettings=$(runSettings)"
-             TargetAndPropertyListSeparators="--" />
+                         VSTestCLIRunSettings=$(runSettings)" />
 
   </Target>
 
