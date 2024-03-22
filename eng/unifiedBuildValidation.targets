@@ -1,53 +1,36 @@
 <Project>
 
-  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetValidArchiveItems" />
-  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetClosestOfficialSdk" />
-
   <PropertyGroup>
     <UnifiedBuildValidationTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsDir>
-    <UnifiedBuildValidationTestsProject>$([MSBuild]::NormalizeDirectory('$(UnifiedBuildValidationTestsDir)', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsProject>
+    <UnifiedBuildValidationTestsProject>$([MSBuild]::NormalizePath('$(UnifiedBuildValidationTestsDir)', 'Microsoft.DotNet.UnifiedBuild.Tests.csproj'))</UnifiedBuildValidationTestsProject>
   </PropertyGroup>
 
   <Target Name="RunUnifiedBuildValidation"
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion">
 
+    <ItemGroup>
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH" Value="$(SdkTarballPath)" />
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_TARGET_RID" Value="$(TargetRid)" />
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_PORTABLE_RID" Value="$(PortableRid)" />
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_BUILD_VERSION" Value="$(SourceBuiltSdkVersion)" />
+    </ItemGroup>
+
     <PropertyGroup>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
-      <SdkBaselineValidationVerbosity Condition="'$(SdkBaselineValidationVerbosity)' == ''">normal</SdkBaselineValidationVerbosity>
+      <!-- <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'RunConfiguration.EnvironmentVariables.%(Identity)=%(Value)')</EnvironmentVariableRunSettings> -->
+      <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'%(Identity)=%(Value)')</EnvironmentVariableRunSettings>
+      <runSettings>RunConfiguration.EnvironmentVariables.UNIFIED_BUILD_VALIDATION_ARGS=$([MSBuild]::Escape($(EnvironmentVariableRunSettings)))</runSettings>
     </PropertyGroup>
 
-      <GetValidArchiveItems ArchiveItems="@(SdkTarballItem)"
-                            ArchiveName="dotnet-sdk">
-        <Output TaskParameter="ValidArchiveItems"
-                ItemName="_BuiltSdkArchivePath"/>
-      </GetValidArchiveItems>
-
-      <!-- There should only be 1 SDK archive -->
-      <Error Text="Multiple valid dotnet-sdk archives found."
-             Condition="'@(_BuiltSdkArchivePath->Count())' != '1'" />
-
-      <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)" Condition="'$(BaselineMsftArchivePath)' == ''">
-        <Output TaskParameter="ClosestOfficialArchivePath"
-                PropertyName="BaselineMsftArchivePath" />
-      </GetClosestOfficialSdk>
-
-      <PropertyGroup>
-        <_BuiltSdkArchivePath>@(_BuiltSdkArchivePath)</_BuiltSdkArchivePath>
-      </PropertyGroup>
-
-    <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings -->
-    <Exec Command="$(DotnetTool) test $(UnifiedBuildValidationTestsDir) --logger:trx -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
-          IgnoreStandardErrorWarningFormat="true"
-          EnvironmentVariables="
-            UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(_BuiltSdkArchivePath);
-            UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH=$(BaselineMsftArchivePath);
-            UNIFIED_BUILD_VALIDATION_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath);
-            UNIFIED_BUILD_VALIDATION_TARGET_RID=$(TargetRid);
-            UNIFIED_BUILD_VALIDATION_PORTABLE_RID=$(PortableRid);
-            UNIFIED_BUILD_VALIDATION_CUSTOM_PACKAGES_PATH=$(CustomSourceBuiltPackagesPath);
-            UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS=true;
-            $(CustomTestEnvVars)" />
+    <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
+             Targets="VSTest"
+             Properties="VsTestUseMSBuildOutput=true--
+                         IsTestProject=true--
+                         Configuration=$(Configuration);
+                         VSTestLogger=trx;
+                         VSTestCLIRunSettings=$(runSettings)"
+             TargetAndPropertyListSeparators="--" />
 
   </Target>
 
