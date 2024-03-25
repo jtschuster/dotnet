@@ -206,11 +206,9 @@ jobs:
         continueOnError: true
         condition: always()
     - ${{ if and(ne(parameters.artifacts.publish.logs, 'false'), ne(parameters.artifacts.publish.logs, '')) }}:
-      - task: 1ES.PublishPipelineArtifact@1
-        inputs:
-          targetPath: 'artifacts/log'
-          artifactName: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
-        displayName: 'Publish logs'
+      - publish: artifacts/log
+        artifact: ${{ coalesce(parameters.artifacts.publish.logs.name, 'Logs_Build_$(Agent.Os)_$(_BuildConfig)') }}
+        displayName: Publish logs
         continueOnError: true
         condition: always()
 
@@ -255,9 +253,7 @@ jobs:
         IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
   - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
-    - task: 1ES.PublishPipelineArtifact@1
-      inputs:
-        targetPath: '$(Build.SourcesDirectory)\eng\common\BuildConfiguration'
-        artifactName: 'BuildConfiguration'
-      displayName: 'Publish build retry configuration'
+    - publish: $(Build.SourcesDirectory)\eng\common\BuildConfiguration
+      artifact: BuildConfiguration
+      displayName: Publish build retry configuration
       continueOnError: true
