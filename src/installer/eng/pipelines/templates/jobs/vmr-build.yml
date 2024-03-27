@@ -136,16 +136,10 @@ jobs:
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
 
     - output: pipelineArtifact
+      path: $(Build.ArtifactStagingDirectory)/publishing
+      artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
-      condition: and(succeededOrFailed(), eq(variables['hasAssets'], 'true'))
-      targetPath: $(sourcesPath)/artifacts/assets/Release/
-      artifactName: $(Agent.JobName)_Artifacts
-
-    - ${{ if ne(parameters.buildSourceOnly, 'true') }}:
-      - output: pipelineArtifact
-        displayName: Publish Packages
-        targetPath: $(sourcesPath)/artifacts/packages/Release/
-        artifactName: $(Agent.JobName)_Packages
+      condition: always()
 
     - ${{ if not(parameters.isBuiltFromVmr) }}:
       - output: pipelineArtifact
@@ -327,6 +321,8 @@ jobs:
           # Allows Arcade to have access to the commit for the build, pass it through to the container
           customEnvVars="$customEnvVars BUILD_SOURCEVERSION=$BUILD_SOURCEVERSION"
 
+          customEnvVars="$customEnvVars BUILD_BUILDNUMBER=$(Build.BuildNumber)"
+
           customDockerRunArgs=""
           for envVar in $customEnvVars; do
             customDockerRunArgs="$customDockerRunArgs -e $envVar"
@@ -441,3 +437,20 @@ jobs:
         mergeTestResults: true
         publishRunAttachments: true
         testRunTitle: SourceBuild_SmokeTests_$(Agent.JobName)
+
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: $(sourcesPath)/artifacts
+      Contents: |
+        VerticalManifest.xml
+        assets/**
+      TargetFolder: $(Build.ArtifactStagingDirectory)/publishing
+    displayName: Copy artifacts to Artifact Staging Directory
+
+  # When building from source, the Private.SourceBuilt.Artifacts archive already contains the nuget packages
+  - ${{ if ne(parameters.buildSourceOnly, 'true') }}:
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: $(sourcesPath)/artifacts/packages
+        TargetFolder: $(Build.ArtifactStagingDirectory)/publishing/packages
+      displayName: Copy packages to Artifact Staging Directory
