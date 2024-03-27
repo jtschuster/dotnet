@@ -1,24 +1,39 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Pass 'ExcludeFromDotnetBuild=false' when building: test projects are excluded by default -->
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
-    <PackageReference Include="xunit" Version="2.5.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1" />
-
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="assets\**"
-             CopyToOutputDirectory="Always" />
+    <Content Include="assets\**" CopyToOutputDirectory="Always" />
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <Target Name="SetRuntimeConfigOptions"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbSdkArchivePath">
+        <Value>$(SdkTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.TargetRid">
+        <Value>$(TargetRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.PortableRid">
+        <Value>$(PortableRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbBuildVersion">
+        <Value>$(SourceBuiltSdkVersion)</Value>
+      </RuntimeHostConfigurationOption>
+    </ItemGroup>
+  </Target>
 
 </Project>
