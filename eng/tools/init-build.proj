@@ -17,7 +17,6 @@
       BuildMSBuildSdkResolver;
       BuildUnifiedBuildValidationTests;
       BuildLeakDetection;
-      BuildMergeAssetManifests;
       ExtractToolPackage;
       GenerateRootFs;
       PoisonPrebuiltPackages" />
@@ -122,24 +121,6 @@
     <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="Build"
              Properties="ExcludeFromDotNetBuild=false" />
-  </Target>
-
-  <Target Name="BuildMergeAssetManifests"
-          DependsOnTargets="ExtractToolPackage;BuildMSBuildSdkResolver"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)MergeAssetManifests.complete">
-
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests.csproj"
-             Targets="Restore"
-             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
-
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests.csproj"
-             Targets="Build" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)MergeAssetManifests.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
   </Target>
 
   <Target Name="GenerateRootFs"
